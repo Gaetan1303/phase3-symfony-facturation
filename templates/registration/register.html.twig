@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block stylesheets %}
+        {% include 'components/_styles.html.twig' %}
+        {% include 'components/_register_styles.html.twig' %}
+{% endblock %}
+
+{% block body %}
+        {% include 'components/_header.html.twig' %}
+
+        <main class="register-page">
+            <div class="register-container">
+                <section class="register-card" role="region" aria-label="Créer un compte">
+                    <div class="register-header">
+                        <div class="register-title">Créez votre compte</div>
+                        <div class="register-subtitle">Ou <a href="/login" class="login-link">connectez-vous à votre compte</a></div>
+                    </div>
+
+                    <form class="register-form" method="post" action="{{ path('app_register') }}">
+                        {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Prénom</label>
+                                <div class="form-input">{{ form_widget(registrationForm.firstName) }}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nom</label>
+                                <div class="form-input">{{ form_widget(registrationForm.lastName) }}</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top:8px;">
+                            <label class="form-label">Raison sociale</label>
+                            <div class="form-input">{{ form_widget(registrationForm.companyName) }}</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">IBAN</label>
+                            <div class="form-input">{{ form_widget(registrationForm.iban) }}</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Adresse e‑mail</label>
+                            <div class="form-input">{{ form_widget(registrationForm.email) }}</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe</label>
+                            <div class="form-input">{{ form_widget(registrationForm.plainPassword) }}</div>
+                        </div>
+
+                        <div style="margin-top:16px; text-align:center;">
+                            <button type="submit" class="btn-primary">Créer mon compte</button>
+                        </div>
+
+                        {{ form_end(registrationForm) }}
+                    </form>
+                </section>
+            </div>
+        </main>
+{% endblock %}
