@@ -1,5 +1,6 @@
 <style>
 /* Page register layout */
+
 .register-page {
   display: flex;
   flex-direction: column;
@@ -12,50 +13,68 @@
 
 .register-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  padding: 149px 32px 149px 32px;
+  /* center the column and match top/bottom spacing from maquette */
+  padding: 149px 0 149px 0;
 }
 
 .register-card {
   width: 448px;
+  height: auto;
   background: #FFFFFF;
-  box-shadow: 0px 1px 3px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  padding: 32px 40px 24px;
+  padding-top: 32px;
+  padding-right: 40px;
+  padding-left: 40px;
+  padding-bottom: 64px;
+  transform: rotate(0deg);
+  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
 }
 
-.register-header {
-  text-align: center;
-  margin-bottom: 8px;
+.register-top {
+  width: 448px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
 }
+
+.register-top .register-icon { background: transparent; }
+
+.register-header { position: relative; height: 140px; }
+.register-icon { width:48px; height:48px; margin:0 0 12px 0; display:flex; align-items:center; justify-content:center; border-radius:8px; }
 .register-title {
-  font-family: Arimo, sans-serif;
-  font-weight: 700;
-  font-size: 30px;
-  line-height: 36px;
-  color: #101828;
+  margin-top: 0;
+  font-family: 'Arimo', sans-serif; font-weight:700; font-size:30px; line-height:36px; color:#101828; text-align:center;
 }
 .register-subtitle {
-  font-family: Arimo, sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  color: #4A5565;
+  margin-top: 8px; font-family: 'Arimo', sans-serif; font-weight:400; font-size:14px; color:#4A5565; text-align:center;
 }
 
-.register-form { width: 368px; margin: 0 auto; }
+
+.register-form { width: 368px; height: auto; margin: 0 auto; display:flex; flex-direction:column; gap:24px; }
 .form-row { display: flex; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.form-group { display: flex; flex-direction: column; gap: 4px; width: 100%; position: relative; }
 .form-label { font-family: Arimo, sans-serif; font-size: 14px; color: #364153; }
-.form-input { box-sizing: border-box; display:flex; align-items:center; padding:8px 12px; height:42px; background: rgba(255,255,255,0.00001); border:1px solid #D1D5DC; border-radius:8px; }
+.form-input { box-sizing: border-box; display:flex; align-items:center; padding:8px 12px; height:42px; background: rgba(255, 255, 255, 0.00001); border:1px solid #D1D5DC; box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1); border-radius:8px; }
 .form-input input { width:100%; border:0; outline:none; font-size:16px; color:#0A0A0A; background:transparent; }
+.form-input input::placeholder { color: #9AA4B2; opacity: 1; }
 
-.btn-primary { display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; background:#155DFC; color:#fff; border-radius:8px; border:0; cursor:pointer; }
+.btn-primary { box-sizing:border-box; display:flex; justify-content:center; align-items:center; padding:8px 16px; width:368px; height:38px; background:#155DFC; color:#FFFFFF; border-radius:8px; border:0; cursor:pointer; margin:12px auto 0 auto; transform: none; box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1); }
 
-.login-link { color:#155DFC; text-decoration:none; }
+.login-link { color:#155DFC; text-decoration:none; font-weight:400; }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .register-container { padding: 48px 16px; }
   .form-row { flex-direction: column; }
+  .register-container { padding-left: 32px; }
 }
 </style>
