@@ -40,7 +40,7 @@ class RegistrationFormType extends AbstractType
                     new Regex(pattern: '/^[A-Z]{2}[0-9A-Z]{13,30}$/'),
                 ],
             ])
-            ->add('siret', TextType::class, ['required' => false])
+            // 'siret' intentionally omitted from registration form
         ;
     }
 

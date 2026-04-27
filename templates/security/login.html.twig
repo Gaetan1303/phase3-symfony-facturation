@@ -9,13 +9,24 @@
 {% endblock %}
 
 {% block body %}
-  {% include 'components/_header.html.twig' %}
 
   <main class="login-page">
     <div class="login-container">
+      <div class="login-top">
+        <div class="login-icon">
+          <img src="{{ asset('assets/icon/icon.png') }}" alt="logo" class="login-icon-img" onerror="this.style.display='none'">
+          <!-- fallback inline icon if asset missing -->
+          <svg class="login-icon-fallback" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="2" stroke="#155DFC" stroke-width="2.5" fill="#DBEAFE"/>
+            <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arimo, sans-serif" font-size="12" font-weight="700" fill="#155DFC">$</text>
+          </svg>
+        </div>
+        <div class="login-title">Se connecter</div>
+        <div class="login-subtitle">Ou <a href="{{ path('app_register') }}" class="create-account-link">créez un compte gratuitement</a></div>
+      </div>
+
       <section class="login-card" aria-label="Se connecter">
         <div class="login-header">
-          <div class="login-title">Se connecter</div>
         </div>
 
         <form method="post" action="{{ path('app_login') }}" class="login-form">

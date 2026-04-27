@@ -8,48 +8,57 @@
 {% endblock %}
 
 {% block body %}
-        {% include 'components/_header.html.twig' %}
-
         <main class="register-page">
             <div class="register-container">
-                <section class="register-card" role="region" aria-label="Créer un compte">
-                    <div class="register-header">
-                        <div class="register-title">Créez votre compte</div>
-                        <div class="register-subtitle">Ou <a href="/login" class="login-link">connectez-vous à votre compte</a></div>
+                <div class="register-top" aria-hidden="false">
+                    <div class="register-icon" aria-hidden="true">
+                        <!-- Inline SVG icon -->
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="2" y="2" width="20" height="20" rx="2" stroke="#155DFC" stroke-width="2.5" fill="#DBEAFE"/>
+                            <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arimo, sans-serif" font-size="12" font-weight="700" fill="#155DFC">$</text>
+                        </svg>
                     </div>
+                    <div class="register-title">Créez votre compte</div>
+                    <div class="register-subtitle">Ou <a href="/login" class="login-link">connectez-vous à votre compte</a></div>
+                </div>
 
-                    <form class="register-form" method="post" action="{{ path('app_register') }}">
-                        {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+                <section class="register-card" role="region" aria-label="Créer un compte">
+                        {{ form_start(registrationForm, {
+                            attr: {
+                                class: 'register-form',
+                                novalidate: 'novalidate'
+                            }
+                        }) }}
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">Prénom</label>
-                                <div class="form-input">{{ form_widget(registrationForm.firstName) }}</div>
-                            </div>
+                                    <label class="form-label">Prénom</label>
+                                    <div class="form-input">{{ form_widget(registrationForm.firstName, {'attr': {'placeholder': 'Jean'}}) }}</div>
+                                </div>
                             <div class="form-group">
-                                <label class="form-label">Nom</label>
-                                <div class="form-input">{{ form_widget(registrationForm.lastName) }}</div>
+                                    <label class="form-label">Nom</label>
+                                    <div class="form-input">{{ form_widget(registrationForm.lastName, {'attr': {'placeholder': 'Dupont'}}) }}</div>
                             </div>
                         </div>
 
                         <div class="form-group" style="margin-top:8px;">
-                            <label class="form-label">Raison sociale</label>
-                            <div class="form-input">{{ form_widget(registrationForm.companyName) }}</div>
+                            <label class="form-label">Raison Sociale</label>
+                            <div class="form-input">{{ form_widget(registrationForm.companyName, {'attr': {'placeholder': 'Tech Solutions'}}) }}</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">IBAN</label>
-                            <div class="form-input">{{ form_widget(registrationForm.iban) }}</div>
+                            <div class="form-input">{{ form_widget(registrationForm.iban, {'attr': {'placeholder': 'FR76 1234 5678 9012 3456 7890 123'}}) }}</div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Adresse e‑mail</label>
-                            <div class="form-input">{{ form_widget(registrationForm.email) }}</div>
+                            <label class="form-label">Adresse Email</label>
+                            <div class="form-input">{{ form_widget(registrationForm.email, {'attr': {'placeholder': 'contact@entreprise.fr'}}) }}</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Mot de passe</label>
-                            <div class="form-input">{{ form_widget(registrationForm.plainPassword) }}</div>
+                            <div class="form-input">{{ form_widget(registrationForm.plainPassword, {'attr': {'placeholder': 'Mot de passe (8+ caractères)'}}) }}</div>
                         </div>
 
                         <div style="margin-top:16px; text-align:center;">
@@ -57,7 +66,6 @@
                         </div>
 
                         {{ form_end(registrationForm) }}
-                    </form>
                 </section>
             </div>
         </main>

@@ -33,7 +33,6 @@ class RegistrationFormTypeTest extends TypeTestCase
             'lastName' => 'Martin',
             'companyName' => 'BobCo',
             'iban' => 'FR7630006000011234567890189',
-            'siret' => '98765432100012',
         ];
 
         $model = new User();
@@ -54,7 +53,6 @@ class RegistrationFormTypeTest extends TypeTestCase
         $this->assertSame('Martin', $user->getLastName());
         $this->assertSame('BobCo', $user->getCompanyName());
         $this->assertSame('FR7630006000011234567890189', $user->getIban());
-        $this->assertSame('98765432100012', $user->getSiret());
 
         // plainPassword n'est pas mappé : le mot de passe en clair doit être traité/haché séparément
         $this->assertFalse($form->get('plainPassword')->getConfig()->getMapped());
