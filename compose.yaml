@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
       # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-MimineForEver}
       POSTGRES_USER: ${POSTGRES_USER:-app}
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
@@ -18,6 +18,11 @@ services:
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
+
+###> sensiolabs/gotenberg-bundle ###
+  gotenberg:
+    image: 'gotenberg/gotenberg:8'
+###< sensiolabs/gotenberg-bundle ###
 
 volumes:
 ###> doctrine/doctrine-bundle ###

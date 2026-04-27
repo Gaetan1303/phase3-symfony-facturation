@@ -50,6 +50,18 @@
             "bin/phpunit"
         ]
     },
+    "sensiolabs/gotenberg-bundle": {
+        "version": "1.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "4b40c14df89ba85902d42b112fee818843af6530"
+        },
+        "files": [
+            "config/packages/gotenberg.yaml"
+        ]
+    },
     "symfony/asset-mapper": {
         "version": "8.0",
         "recipe": {
@@ -229,6 +241,15 @@
             "config/routes/security.yaml"
         ]
     },
+    "symfony/sendgrid-mailer": {
+        "version": "8.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "4.4",
+            "ref": "1caff9467bfc5c7f68503aa9eba9dc762a30ae21"
+        }
+    },
     "symfony/stimulus-bundle": {
         "version": "3.0",
         "recipe": {
@@ -269,6 +290,9 @@
             "config/packages/twig.yaml",
             "templates/base.html.twig"
         ]
+    },
+    "symfony/ux-chartjs": {
+        "version": "v3.0.0"
     },
     "symfony/ux-turbo": {
         "version": "3.0",
@@ -317,6 +341,18 @@
         },
         "files": [
             "config/packages/messenger.yaml"
+        ]
+    },
+    "symfonycasts/tailwind-bundle": {
+        "version": "0.12",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.8",
+            "ref": "d0bd0276f74de90adfaa4c6cd74cc0caacd77e0a"
+        },
+        "files": [
+            "config/packages/symfonycasts_tailwind.yaml"
         ]
     },
     "twig/extra-bundle": {
