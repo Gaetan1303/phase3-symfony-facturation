@@ -1,0 +1,46 @@
+name: Run PHPUnit tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v4
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_sqlite, pdo_pgsql
+
+      - name: Install system deps
+        run: sudo apt-get update -y && sudo apt-get install -y sqlite3
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Install composer dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+
+      - name: Prepare test DB file
+        run: |
+          # Create a temporary SQLite file for tests (named MimineTest)
+          DB_FILE=$(mktemp /tmp/MimineTestXXXX.sqlite)
+          touch "$DB_FILE"
+          echo "DATABASE_FILE=$DB_FILE" >> $GITHUB_ENV
+          echo "DATABASE_URL=sqlite:///$DB_FILE" >> $GITHUB_ENV
+
+      - name: Run PHPUnit
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: ./vendor/bin/phpunit --testdox
