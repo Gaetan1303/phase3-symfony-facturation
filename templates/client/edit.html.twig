@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le client : {{ client.name }}{% endblock %}
+
+{% block stylesheets %}
+  <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block body %}
+  <main class="min-h-screen bg-gray-50 flex">
+    {# Sidebar component include #}
+    {% include 'components/sidebar.html.twig' %}
+
+    <!-- Client edit content -->
+    <section class="flex-1 min-w-0">
+      <!-- Mobile header -->
+      <div class="md:hidden flex items-center gap-3 p-4 bg-white border-b border-[#E5E7EB]">
+        <button id="sidebar-toggle" class="p-2 rounded-md text-[#4A5565] hover:bg-gray-100">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="font-semibold text-[#101828]">Modifier le client</span>
+      </div>
+
+      <div class="p-4 md:p-8">
+        <div class="max-w-lg mx-auto">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Modifier le client</h1>
+
+        <div class="bg-white rounded-[14px] border border-[#F3F4F6] p-6 w-full shadow-sm">
+          {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nom du client</label>
+              <div class="mt-1">
+                {{ form_widget(form.name, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500', 'placeholder': 'Ex: ACME Corp'}}) }}
+              </div>
+              {{ form_errors(form.name) }}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <div class="mt-1">
+                  {{ form_widget(form.email, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500', 'placeholder': 'contact@example.com'}}) }}
+                </div>
+                {{ form_errors(form.email) }}
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Téléphone</label>
+                <div class="mt-1">
+                  {{ form_widget(form.phone, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500', 'placeholder': '+33 1 23 45 67 89'}}) }}
+                </div>
+                {{ form_errors(form.phone) }}
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Adresse</label>
+              <div class="mt-1">
+                {{ form_widget(form.address, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-20 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500', 'placeholder': '123 rue de la Paix, 75000 Paris'}}) }}
+              </div>
+              {{ form_errors(form.address) }}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">SIRET (Optionnel)</label>
+                <div class="mt-1">
+                  {{ form_widget(form.siret, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500', 'placeholder': '987 654 321 00098'}}) }}
+                </div>
+                {{ form_errors(form.siret) }}
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">RIB (Optionnel)</label>
+                <div class="mt-1">
+                  {{ form_widget(form.rib, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500', 'placeholder': 'FR76 1234 5678 9012 3456 7890 123'}}) }}
+                </div>
+                {{ form_errors(form.rib) }}
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-6">
+              <a href="{{ path('client_index') }}" class="px-4 py-2 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-50 transition">
+                Annuler
+              </a>
+              <button type="submit" class="px-4 py-2 bg-[#155DFC] text-white rounded-md hover:bg-[#1447E6] transition">
+                Enregistrer
+              </button>
+            </div>
+
+          {{ form_end(form) }}
+        </div>
+        </div>
+      </div>
+    </section>
+  </main>
+{% endblock %}

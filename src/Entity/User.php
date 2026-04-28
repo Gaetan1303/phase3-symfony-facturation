@@ -6,8 +6,8 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
@@ -24,6 +24,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
+    /**
+     * @var string The hashed password
+     */
     #[ORM\Column(type: 'string')]
     private string $password;
 
@@ -52,12 +55,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $clients;
 
     /**
-     * @var Collection<int, Product>
-     */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Product::class)]
-    private Collection $products;
-
-    /**
      * @var Collection<int, Invoice>
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Invoice::class)]
@@ -66,7 +63,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->clients = new ArrayCollection();
-        $this->products = new ArrayCollection();
         $this->invoices = new ArrayCollection();
     }
 
@@ -87,14 +83,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * A visual identifier that represents this user.
+     */
     public function getUserIdentifier(): string
     {
         return $this->email;
     }
 
+    /**
+     * @see UserInterface
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -107,6 +110,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
     public function getPassword(): string
     {
         return $this->password;
@@ -119,13 +125,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Returning a salt is only needed, if you are not using a modern
+     * hashing algorithm (e.g. bcrypt or sodium) in security.yaml.
+     *
+     * @see UserInterface
+     */
     public function getSalt(): ?string
     {
         return null;
     }
 
-    public function eraseCredentials(): void
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
     {
+        // If you store any temporary, sensitive data on the user, clear it here
     }
 
     public function getFirstName(): ?string
@@ -222,33 +238,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->clients->removeElement($client) && $client->getUser() === $this) {
             $client->setUser(null);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Product>
-     */
-    public function getProducts(): Collection
-    {
-        return $this->products;
-    }
-
-    public function addProduct(Product $product): self
-    {
-        if (!$this->products->contains($product)) {
-            $this->products->add($product);
-            $product->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProduct(Product $product): self
-    {
-        if ($this->products->removeElement($product) && $product->getUser() === $this) {
-            $product->setUser(null);
         }
 
         return $this;
