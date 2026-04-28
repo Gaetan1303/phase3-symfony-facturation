@@ -22,9 +22,27 @@ services:
 ###> sensiolabs/gotenberg-bundle ###
   gotenberg:
     image: 'gotenberg/gotenberg:8'
+    ports:
+      - "35030:3000"
 ###< sensiolabs/gotenberg-bundle ###
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-adminpass}
+    ports:
+      - "35081:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - database
 
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
 ###< doctrine/doctrine-bundle ###
+
+  # pgAdmin persistent data
+  pgadmin_data:
+

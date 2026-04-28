@@ -58,7 +58,7 @@ Prérequis : PHP 8.4+, Composer, Docker (optionnel), Node.js/npm (si rebuild des
 5. Appliquer les migrations Doctrine
 
 	php bin/console doctrine:migrations:migrate
-
+    'attention, si vous utilisez un docker, il faut lancer les commandes à l'intérieur du conteneur (ex. `docker exec -it <container_name> bash` pour accéder au terminal du conteneur)'
 
 
 6. Lancer le serveur PHP (ou `symfony server:start` si vous utilisez l'outil Symfony)

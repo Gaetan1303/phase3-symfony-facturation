@@ -3,15 +3,15 @@ services:
 ###> doctrine/doctrine-bundle ###
   database:
     ports:
-      - "5432"
+      - "35043:5432"
 ###< doctrine/doctrine-bundle ###
 
 ###> symfony/mailer ###
   mailer:
     image: axllent/mailpit
     ports:
-      - "1025"
-      - "8025"
+      - "35025:1025"
+      - "35026:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
@@ -20,5 +20,5 @@ services:
 ###> sensiolabs/gotenberg-bundle ###
   gotenberg:
     ports:
-      - "3000"
+      - "35030:3000"
 ###< sensiolabs/gotenberg-bundle ###
