@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block stylesheets %}
+  <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block body %}
+  <main class="min-h-screen bg-gray-50 flex">
+    {# Sidebar component include #}
+    {% include 'components/sidebar.html.twig' %}
+
+    <!-- Profile content -->
+    <section class="flex-1 p-8">
+      <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Mon profil</h1>
+
+        <div class="bg-white rounded-[10px] border border-gray-100 p-6 max-w-[672px] shadow-[0_1px_2px_rgba(0,0,0,0.1),0_1px_3px_rgba(0,0,0,0.1)]">
+          {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Raison sociale</label>
+              <div class="mt-1">
+                {{ form_widget(form.companyName, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500'}}) }}
+              </div>
+              <p class="mt-2 text-sm text-gray-500 flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Le nom de votre entreprise qui apparaîtra sur vos factures.</span>
+              </p>
+              {{ form_errors(form.companyName) }}
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">SIRET (optionnel)</label>
+              <div class="mt-1">
+                {{ form_widget(form.siret, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500'}}) }}
+              </div>
+              {{ form_errors(form.siret) }}
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">IBAN</label>
+              <div class="mt-1">
+                {{ form_widget(form.iban, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-11 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500'}}) }}
+              </div>
+              <p class="mt-2 text-sm text-gray-500 flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Compte bancaire qui recevra les virements de vos clients.</span>
+              </p>
+              {{ form_errors(form.iban) }}
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Conditions Générales de Vente (CGV)</label>
+              <div class="mt-1">
+                {{ form_widget(form.cgv, {'attr': {'class': 'block w-full rounded-md border border-gray-200 h-28 p-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500'}}) }}
+              </div>
+              <p class="mt-2 text-sm text-gray-500 flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Ces conditions seront affichées au bas de vos factures PDF.</span>
+              </p>
+              {{ form_errors(form.cgv) }}
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button type="submit" name="profile_save" value="1" class="inline-flex items-center px-4 py-2 bg-[#1366FF] text-white rounded-md shadow-sm hover:bg-[#0f57d9]">Enregistrer les modifications</button>
+              <a href="{{ path('app_dashboard') }}" class="text-sm text-gray-600">Annuler</a>
+            </div>
+
+          {{ form_end(form) }}
+        </div>
+      </div>
+    </section>
+  </main>
+{% endblock %}
