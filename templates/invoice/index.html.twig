@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Factures{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <h1>Mes factures</h1>
+
+    <table class="table">
+      <thead>
+        <tr><th>Numéro</th><th>Date</th><th>Client</th><th>Total TTC</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+          <tr>
+            <td>{{ inv.number }}</td>
+            <td>{{ inv.createdAt|date('Y-m-d') }}</td>
+            <td>{{ inv.client ? inv.client.name : '-' }}</td>
+            <td>{{ inv.totalTtc }} €</td>
+            <td><a class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300" href="#">Voir</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">Aucune facture</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

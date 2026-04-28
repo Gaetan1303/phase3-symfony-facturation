@@ -1,0 +1,13 @@
+{{ form_start(form) }}
+  <div class="form-group">
+    {{ form_row(form.name) }}
+  </div>
+  <div class="form-group">
+    {{ form_row(form.description) }}
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-6">{{ form_row(form.price) }}</div>
+    <div class="form-group col-md-6">{{ form_row(form.unit) }}</div>
+  </div>
+  <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Enregistrer</button>
+{{ form_end(form) }}

@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Produits{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <h1>Produits</h1>
+
+    <a class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" href="{{ path('product_new') }}">Nouveau produit</a>
+
+    <table class="table">
+      <thead>
+        <tr><th>Nom</th><th>Prix</th><th>Unité</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.price }} €</td>
+            <td>{{ p.unit.value|default(p.unit) }}</td>
+            <td>
+              <a class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300" href="{{ path('product_edit', {'id': p.id}) }}">Modifier</a>
+              <form method="post" action="{{ path('product_delete', {'id': p.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce produit ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
+                <button class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">Aucun produit</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
