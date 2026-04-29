@@ -56,6 +56,16 @@
         {% endfor %}
       </tbody>
     </table>
+    <div style="margin-top:24px; font-size:11px; color:#555; border-top:1px solid #ddd; padding-top:12px;">
+      <strong>Conditions générales de vente (CGV)</strong>
+      {% if invoice.user and invoice.user.cgv %}
+        <p style="font-style:italic; margin:6px 0;">* {{ invoice.user.cgv|raw }}</p>
+      {% else %}
+        <p style="font-style:italic; margin:6px 0;">* Les prestations sont réalisées selon les conditions générales de vente de la société. Toute réclamation doit être faite dans les 7 jours suivant réception.</p>
+      {% endif %}
 
+      <p style="font-style:italic; margin:6px 0;">* <strong>SIRET :</strong> {{ invoice.user ? invoice.user.siret|default('-') : '-' }}</p>
+      <p style="font-style:italic; margin:6px 0;">* <strong>Conditions de paiement :</strong> {{ invoice.user ? (invoice.user.paymentTerms|default('Paiement à 30 jours fin de mois, par virement bancaire. Retard de paiement soumis aux pénalités légales.')) : 'Paiement à 30 jours fin de mois, par virement bancaire. Retard de paiement soumis aux pénalités légales.' }}</p>
+    </div>
   </body>
 </html>
