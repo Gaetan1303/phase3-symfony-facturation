@@ -1,0 +1,48 @@
+{#
+  Reusable Add Product Card component.
+  Parameters:
+    - prefix: optional string to namespace element IDs (default: empty)
+#}
+{% set p = prefix|default('') %}
+{# show_add_button: whether to render the '+ Ajouter' button (default true)
+   label_field, qty_field, price_field: optional pre-rendered HTML for existing lines
+   line_total: optional initial total string for the line
+#}
+{% set show_add = show_add_button is defined ? show_add_button : true %}
+{% set line_total_value = line_total|default('0.00 €') %}
+<div id="{{ p ~ 'add-product-card' }}" class="mt-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[10px] p-[17px] flex items-end gap-4">
+  <div class="flex-1 flex items-center gap-3">
+    <div id="{{ p ~ 'ap_badge' }}" class="w-10 h-10 rounded-full flex items-center justify-center font-medium" style="background:#DBEAFE;color:#1447E6"></div>
+    <div class="flex-1">
+      <label class="text-sm text-[#364153] block mb-1">Sélectionner un produit</label>
+      {% if label_field is defined %}
+        <div class="w-full">{{ label_field|raw }}</div>
+      {% else %}
+        <label class="sr-only">Sélectionner un produit</label>
+        <textarea id="{{ p ~ 'ap_product' }}" rows="1" placeholder="Sélectionner un produit" class="w-full rounded-[8px] border border-[#D1D5DC] p-2 bg-white"></textarea>
+      {% endif %}
+    </div>
+  </div>
+  <div class="w-24">
+    <label class="text-sm text-[#364153] block mb-1">Quantité</label>
+    {% if qty_field is defined %}
+      <div>{{ qty_field|raw }}</div>
+    {% else %}
+      <input id="{{ p ~ 'ap_qty' }}" type="number" value="1" min="1" class="w-full rounded-[8px] border border-[#D1D5DC] p-2" />
+    {% endif %}
+  </div>
+  <div class="w-36">
+    <label class="text-sm text-[#364153] block mb-1">Prix unitaire (€)</label>
+    {% if price_field is defined %}
+      <div>{{ price_field|raw }}</div>
+    {% else %}
+      <input id="{{ p ~ 'ap_price' }}" type="text" class="w-full rounded-[8px] border border-[#D1D5DC] p-2" />
+    {% endif %}
+  </div>
+  <div class="flex flex-col items-end gap-2">
+    <div class="text-sm text-[#101828]">Total ligne : <span class="font-bold text-[#155DFC] line-total">{{ line_total_value }}</span></div>
+    {% if show_add %}
+      <button id="{{ p ~ 'ap_add' }}" type="button" class="ml-2 inline-flex items-center gap-2 bg-[#6B7280] text-white px-4 py-2 rounded-[8px]">+ Ajouter</button>
+    {% endif %}
+  </div>
+</div>

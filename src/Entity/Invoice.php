@@ -114,6 +114,21 @@ class Invoice
         return $this;
     }
 
+    /**
+     * Recalculate amount from lines and apply to this invoice.
+     */
+    public function recalculateAmount(): float
+    {
+        $total = 0.0;
+        foreach ($this->getLines() as $line) {
+            // InvoiceLine::getLineTotal() returns float
+            $total += $line->getLineTotal();
+        }
+        $this->setAmount($total);
+
+        return $total;
+    }
+
     public function getClient(): ?Client
     {
         return $this->client;

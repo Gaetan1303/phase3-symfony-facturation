@@ -140,4 +140,9 @@ class InvoiceLine
 
         return $this;
     }
+
+    public function getLineTotal(): float
+    {
+        return (float) $this->unitPrice * $this->quantity;
+    }
 }
