@@ -11,6 +11,8 @@ use Sensiolabs\GotenbergBundle\GotenbergPdfInterface;
 use Sensiolabs\GotenbergBundle\Builder\Result\GotenbergFileResult;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/invoices')]
@@ -115,6 +117,51 @@ class InvoiceController extends AbstractController
         return $this->render('invoice/show.html.twig', ['invoice' => $invoice]);
     }
 
+    #[Route('/{id}/generate-pdf', name: 'invoice_generate_pdf', methods: ['POST'])]
+    public function generatePdf(Invoice $invoice, Request $request, \App\Service\InvoiceManager $invoiceManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if (!$this->isCsrfTokenValid('generate_pdf' . $invoice->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        // Only validated invoices can be transformed
+        if ($invoice->getStatus() !== \App\Enum\InvoiceStatus::PENDING_PAYMENT) {
+            $this->addFlash('error', 'Seules les factures validées peuvent être exportées en PDF.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        try {
+            $path = $invoiceManager->generatePdf($invoice);
+            if ($path) {
+                $this->em->wrapInTransaction(function () use ($invoice, $path) { $invoice->setPdfPath($path); $this->em->persist($invoice); });
+
+                // Serve the generated file immediately for download (one-click flow)
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $fullPath = $projectDir . DIRECTORY_SEPARATOR . $path;
+                if (file_exists($fullPath)) {
+                    $response = new BinaryFileResponse($fullPath);
+                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $invoice->getNumber() . '.pdf');
+                    return $response;
+                }
+
+                $this->addFlash('success', 'PDF généré et stocké.');
+            } else {
+                $this->addFlash('error', 'Échec de la génération du PDF.');
+            }
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Erreur lors de la génération du PDF.');
+        }
+
+        return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+    }
+
     #[Route('/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
     public function pdf(Invoice $invoice, GotenbergPdfInterface $gotenbergPdf): GotenbergFileResult
     {
@@ -129,5 +176,32 @@ class InvoiceController extends AbstractController
             ->fileName($invoice->getNumber());
 
         return $builder->generate();
+    }
+
+    #[Route('/{id}/download', name: 'invoice_download', methods: ['GET'])]
+    public function download(Invoice $invoice): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        $path = $invoice->getPdfPath();
+        if (!$path) {
+            $this->addFlash('error', 'Aucun PDF disponible pour cette facture.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $fullPath = $projectDir . DIRECTORY_SEPARATOR . $path;
+        if (!file_exists($fullPath)) {
+            $this->addFlash('error', 'Fichier introuvable.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        $response = new BinaryFileResponse($fullPath);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $invoice->getNumber() . '.pdf');
+        return $response;
     }
 }

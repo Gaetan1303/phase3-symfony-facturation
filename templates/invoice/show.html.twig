@@ -15,7 +15,16 @@
             <div class="text-sm text-gray-500">{{ invoice.createdAt ? invoice.createdAt|date('d/m/Y') : '-' }}</div>
           </div>
           <div class="flex items-center gap-3">
-            <a href="{{ path('invoice_pdf', {id: invoice.id}) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-md text-sm">Exporter PDF</a>
+            {% if invoice.status.value == 'pending_payment' %}
+              <form method="post" action="{{ path('invoice_generate_pdf', {id: invoice.id}) }}" class="inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('generate_pdf' ~ invoice.id) }}">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-[#155DFC] text-white rounded-md text-sm">Générer PDF</button>
+              </form>
+            {% endif %}
+            {% if invoice.pdfPath %}
+              <a href="{{ path('invoice_download', {id: invoice.id}) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-md text-sm">Télécharger PDF</a>
+            {% endif %}
+            <a href="{{ path('invoice_pdf', {id: invoice.id}) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-md text-sm">Aperçu PDF</a>
           </div>
           <div class="text-right">
             {% include 'components/status_badge.html.twig' with {'status': invoice.status} %}
