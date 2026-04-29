@@ -42,7 +42,7 @@
             <tbody class="bg-white">
               {% for inv in invoices %}
                 <tr class="align-middle" style="height:48px;" data-status="{{ inv.status.value }}">
-                  <td class="pl-6 text-base text-gray-800">{{ inv.number }}</td>
+                  <td class="pl-6 text-base text-gray-800"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-gray-800 hover:underline">{{ inv.number }}</a></td>
                   <td class="px-6 text-sm text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
                   <td class="px-6 text-base text-gray-800">{{ inv.client ? inv.client.name : '-' }}</td>
                   <td class="px-6 text-right text-base font-semibold text-gray-800">{{ inv.totalTtc }} €</td>
@@ -57,7 +57,7 @@
                         <button type="submit" class="text-[#E7000B]">Supprimer</button>
                       </form>
                     {% else %}
-                      <a href="#" class="text-[#155DFC]">Détails</a>
+                      <a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-[#155DFC]">Détails</a>
                     {% endif %}
                   </td>
                 </tr>
