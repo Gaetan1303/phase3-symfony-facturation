@@ -7,6 +7,8 @@ use App\Form\InvoiceType;
 use App\Service\InvoiceNumberGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Sensiolabs\GotenbergBundle\GotenbergPdfInterface;
+use Sensiolabs\GotenbergBundle\Builder\Result\GotenbergFileResult;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -99,5 +101,33 @@ class InvoiceController extends AbstractController
         }
 
         return $this->redirectToRoute('app_invoices');
+    }
+
+    #[Route('/{id}', name: 'invoice_show', methods: ['GET'])]
+    public function show(Invoice $invoice): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        return $this->render('invoice/show.html.twig', ['invoice' => $invoice]);
+    }
+
+    #[Route('/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
+    public function pdf(Invoice $invoice, GotenbergPdfInterface $gotenbergPdf): GotenbergFileResult
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        $builder = $gotenbergPdf->html()
+            ->content('invoice/pdf.html.twig', ['invoice' => $invoice])
+            ->fileName($invoice->getNumber());
+
+        return $builder->generate();
     }
 }

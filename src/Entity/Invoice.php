@@ -49,6 +49,9 @@ class Invoice
         $this->lines = new ArrayCollection();
     }
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $pdfPath = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -176,6 +179,18 @@ class Invoice
         if ($this->lines->removeElement($line) && $line->getInvoice() === $this) {
             $line->setInvoice(null);
         }
+
+        return $this;
+    }
+
+    public function getPdfPath(): ?string
+    {
+        return $this->pdfPath;
+    }
+
+    public function setPdfPath(?string $pdfPath): self
+    {
+        $this->pdfPath = $pdfPath;
 
         return $this;
     }
