@@ -30,7 +30,7 @@ class InvoiceController extends AbstractController
     }
 
     #[Route('/new', name: 'invoice_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, InvoiceNumberGenerator $generator): Response
+    public function new(Request $request, \App\Service\InvoiceManager $invoiceManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -39,27 +39,7 @@ class InvoiceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->em->wrapInTransaction(function () use ($invoice, $form, $generator): void {
-                $invoice->setUser($this->getUser());
-
-                // Fix 1 : boucle fusionnée — setInvoice() + calcul du total en une seule passe
-                $total = 0.0;
-                foreach ($invoice->getLines() as $line) {
-                    $line->setInvoice($invoice);
-                    $total += $line->getQuantity() * (float) $line->getUnitPrice();
-                }
-                $invoice->setAmount($total);
-
-                if ($form->get('validate')->isClicked()) {
-                    $invoice->setStatus(\App\Enum\InvoiceStatus::PENDING_PAYMENT);
-                    // Fix 2 : createdAt pas encore défini avant le flush → on utilise now()
-                    $invoice->setNumber($generator->generateFor(new \DateTimeImmutable()));
-                } else {
-                    $invoice->setStatus(\App\Enum\InvoiceStatus::DRAFT);
-                }
-
-                $this->em->persist($invoice);
-            });
+            $invoiceManager->persistInvoice($invoice, $this->getUser(), $form->get('validate')->isClicked());
 
             $this->addFlash('success', 'Facture enregistrée.');
 
@@ -70,7 +50,7 @@ class InvoiceController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'invoice_edit', methods: ['GET', 'POST'])]
-    public function edit(Invoice $invoice, Request $request, InvoiceNumberGenerator $generator): Response
+    public function edit(Invoice $invoice, Request $request, \App\Service\InvoiceManager $invoiceManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -87,23 +67,7 @@ class InvoiceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->em->wrapInTransaction(function () use ($invoice, $form, $generator): void {
-                // Fix 1 : boucle fusionnée — setInvoice() + calcul du total en une seule passe
-                $total = 0.0;
-                foreach ($invoice->getLines() as $line) {
-                    $line->setInvoice($invoice);
-                    // Fix 3 : suppression du "-" parasite présent sur cette ligne
-                    $total += $line->getQuantity() * (float) $line->getUnitPrice();
-                }
-                $invoice->setAmount($total);
-
-                if ($form->get('validate')->isClicked()) {
-                    $invoice->setStatus(\App\Enum\InvoiceStatus::PENDING_PAYMENT);
-                    if (empty($invoice->getNumber())) {
-                        $invoice->setNumber($generator->generateFor(new \DateTimeImmutable()));
-                    }
-                }
-            });
+            $invoiceManager->persistInvoice($invoice, $this->getUser(), $form->get('validate')->isClicked());
 
             $this->addFlash('success', 'Facture mise à jour.');
             return $this->redirectToRoute('app_invoices');

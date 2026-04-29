@@ -1,0 +1,22 @@
+{#
+  Usage: include this template with a `status` variable.
+  Expected values: App\Enum\InvoiceStatus::DRAFT | PENDING_PAYMENT | PAID
+#}
+{% set s = status.value|default(status|default('draft')) %}
+
+{% if s == 'paid' %}
+  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm" style="background:#ECFDF5;color:#059669"> 
+    <svg class="w-4 h-4 mr-2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 13.5l-3.5-3.5 1.4-1.4L8 10.7l5.6-5.6L15 6l-7 7.5z" fill="#059669"/></svg>
+    Payée
+  </span>
+{% elseif s == 'pending_payment' %}
+  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm" style="background:#FFF7ED;color:#C2410C"> 
+    <svg class="w-4 h-4 mr-2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v5a3 3 0 11-2 0V3a1 1 0 011-1z" fill="#C2410C"/></svg>
+    En attente
+  </span>
+{% else %}
+  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm" style="background:#FFFFFF;border:1px solid #E6EEF9;color:#1447E6"> 
+    <svg class="w-4 h-4 mr-2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="#1447E6" stroke-width="1.5" fill="none"/><path d="M10 6v4l2 1" stroke="#1447E6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Brouillon
+  </span>
+{% endif %}

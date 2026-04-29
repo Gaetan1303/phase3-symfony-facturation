@@ -46,34 +46,27 @@
                 </tr>
               </thead>
               <tbody id="lines" data-prototype="{{ form_widget(form.lines.vars.prototype)|e('html_attr') }}">
-                  {{ form_widget(form.lines) }}
+                  {% for i, line in form.lines %}
+                    <tr>
+                      <td colspan="5" style="padding:0">
+                        {% include 'components/add_product_card.html.twig' with {
+                          'prefix': 'line_' ~ i ~ '_',
+                          'label_field': form_widget(line.label),
+                          'qty_field': form_widget(line.quantity),
+                          'price_field': form_widget(line.unitPrice),
+                          'show_add_button': false,
+                          'line_total': (line.vars.data.getLineTotal() is defined ? (line.vars.data.getLineTotal() ~ ' €') : '0.00 €')
+                        } %}
+                      </td>
+                    </tr>
+                  {% else %}
+                  {% endfor %}
                 </tbody>
             </table>
           </div>
 
-            <!-- Add product card (visual) -->
-            <div id="add-product-card" class="mt-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[10px] p-[17px] flex items-end gap-4">
-              <div class="flex-1 flex items-center gap-3">
-                <div id="ap_badge" class="w-10 h-10 rounded-full flex items-center justify-center font-medium" style="background:#DBEAFE;color:#1447E6"></div>
-                <div class="flex-1">
-                  <label class="text-sm text-[#364153] block mb-1">Sélectionner un produit</label>
-                  <textarea id="ap_product" rows="1" class="w-full rounded-[8px] border border-[#D1D5DC] p-2 bg-white"></textarea>
-                  <div class="mt-2 text-sm text-[#101828]">Total global (TTC) : <span id="ap_global_total" class="font-bold text-[#155DFC]">0.00 €</span></div>
-                </div>
-              </div>
-              <div class="w-24">
-                <label class="text-sm text-[#364153] block mb-1">Quantité</label>
-                <input id="ap_qty" type="number" value="1" min="1" class="w-full rounded-[8px] border border-[#D1D5DC] p-2" />
-              </div>
-              <div class="w-36">
-                <label class="text-sm text-[#364153] block mb-1">Prix unitaire (€)</label>
-                <input id="ap_price" type="text" class="w-full rounded-[8px] border border-[#D1D5DC] p-2" />
-              </div>
-              <div class="flex flex-col items-end gap-2">
-                <div id="ap_line_total" class="text-sm text-[#101828]">Total ligne : <span class="font-bold text-[#155DFC]">0.00 €</span></div>
-                <button id="ap_add" type="button" class="ml-2 inline-flex items-center gap-2 bg-[#6B7280] text-white px-4 py-2 rounded-[8px]">+ Ajouter</button>
-              </div>
-            </div>
+            {# Add product card (visual) - extracted to component for reuse #}
+            {% include 'components/add_product_card.html.twig' %}
         </div>
 
         <div class="flex justify-end items-center gap-6 mb-6">

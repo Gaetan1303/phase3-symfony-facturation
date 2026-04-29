@@ -18,12 +18,12 @@
 
       <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <button class="px-4 py-2 bg-[#EFF6FF] text-[#1447E6] rounded-full text-sm">Toutes</button>
-            <button class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">Brouillons</button>
-            <button class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">En attente</button>
-            <button class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">Payées</button>
-          </div>
+          <div class="flex items-center gap-3" id="invoice-filters">
+              <button data-filter="all" class="px-4 py-2 bg-[#EFF6FF] text-[#1447E6] rounded-full text-sm">Toutes</button>
+              <button data-filter="draft" class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">Brouillons</button>
+              <button data-filter="pending_payment" class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">En attente</button>
+              <button data-filter="paid" class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">Payées</button>
+            </div>
           <div class="text-sm text-gray-500">&nbsp;</div>
         </div>
 
@@ -41,19 +41,13 @@
             </thead>
             <tbody class="bg-white">
               {% for inv in invoices %}
-                <tr class="align-middle" style="height:48px;">
+                <tr class="align-middle" style="height:48px;" data-status="{{ inv.status.value }}">
                   <td class="pl-6 text-base text-gray-800">{{ inv.number }}</td>
                   <td class="px-6 text-sm text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
                   <td class="px-6 text-base text-gray-800">{{ inv.client ? inv.client.name : '-' }}</td>
                   <td class="px-6 text-right text-base font-semibold text-gray-800">{{ inv.totalTtc }} €</td>
                   <td class="px-6">
-                    {% if inv.status == constant('App\\Enum\\InvoiceStatus::PAID') %}
-                      <span class="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Payée</span>
-                    {% elseif inv.status == constant('App\\Enum\\InvoiceStatus::PENDING_PAYMENT') %}
-                      <span class="inline-block bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">En attente</span>
-                    {% else %}
-                      <span class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Brouillon</span>
-                    {% endif %}
+                    {% include 'components/status_badge.html.twig' with {'status': inv.status} %}
                   </td>
                   <td class="pr-6 text-right text-sm">
                     {% if inv.status == constant('App\\Enum\\InvoiceStatus::DRAFT') %}
@@ -73,6 +67,30 @@
             </tbody>
           </table>
         </div>
+        <script>
+          (function(){
+            const filters = document.getElementById('invoice-filters');
+            if (!filters) return;
+            const buttons = filters.querySelectorAll('button[data-filter]');
+            const rows = document.querySelectorAll('tbody tr[data-status]');
+
+            function setActive(btn){
+              buttons.forEach(b => b.classList.remove('bg-[#EFF6FF]', 'text-[#1447E6]'));
+              btn.classList.add('bg-[#EFF6FF]','text-[#1447E6]');
+            }
+
+            buttons.forEach(btn => {
+              btn.addEventListener('click', () => {
+                const filter = btn.dataset.filter;
+                setActive(btn);
+                rows.forEach(r => {
+                  if (filter === 'all' || r.dataset.status === filter) r.style.display = '';
+                  else r.style.display = 'none';
+                });
+              });
+            });
+          })();
+        </script>
       </div>
     </div>
   </div>
