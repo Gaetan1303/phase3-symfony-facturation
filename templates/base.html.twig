@@ -23,6 +23,12 @@
         {% endif %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <div class="min-h-screen bg-gray-50 flex">
+            {% block sidebar %}{% include 'components/sidebar.html.twig' %}{% endblock %}
+
+            <div class="flex-1">
+                {% block body %}{% endblock %}
+            </div>
+        </div>
     </body>
 </html>

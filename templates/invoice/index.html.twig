@@ -3,26 +3,68 @@
 {% block title %}Factures{% endblock %}
 
 {% block body %}
-  <div class="container">
-    <h1>Mes factures</h1>
+  <div class="min-h-screen bg-gray-50 p-8">
+    <div class="mx-auto" style="width:1203px;">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Factures</h1>
+        <a href="{{ path('invoice_new') }}" class="inline-flex items-center px-4 py-2 bg-[#155DFC] text-white rounded">+ Créer une facture</a>
+      </div>
 
-    <table class="table">
-      <thead>
-        <tr><th>Numéro</th><th>Date</th><th>Client</th><th>Total TTC</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for inv in invoices %}
-          <tr>
-            <td>{{ inv.number }}</td>
-            <td>{{ inv.createdAt|date('Y-m-d') }}</td>
-            <td>{{ inv.client ? inv.client.name : '-' }}</td>
-            <td>{{ inv.totalTtc }} €</td>
-            <td><a class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300" href="#">Voir</a></td>
-          </tr>
-        {% else %}
-          <tr><td colspan="5">Aucune facture</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+      <div class="bg-white rounded-2xl shadow p-4">
+        <div class="flex items-center gap-3 mb-4">
+          <button class="px-4 py-2 bg-white text-[#1447E6] rounded">Toutes</button>
+          <button class="px-4 py-2 bg-gray-50 rounded">Brouillons</button>
+          <button class="px-4 py-2 bg-gray-50 rounded">En attente</button>
+          <button class="px-4 py-2 bg-gray-50 rounded">Payées</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto text-left">
+            <thead>
+              <tr class="bg-gray-50" style="height:52.5px;">
+                <th class="pl-6 pr-4 font-semibold">Numéro</th>
+                <th class="px-4 font-semibold">Date</th>
+                <th class="px-4 font-semibold">Client</th>
+                <th class="px-4 font-semibold">Total TTC</th>
+                <th class="px-4 font-semibold">Statut</th>
+                <th class="pr-6 text-right font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for inv in invoices %}
+                <tr class="bg-white border-b" style="height:48px;">
+                  <td class="pl-6 pr-4">{{ inv.number }}</td>
+                  <td class="px-4 text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
+                  <td class="px-4">{{ inv.client ? inv.client.name : '-' }}</td>
+                  <td class="px-4">{{ inv.totalTtc }} €</td>
+                  <td class="px-4">
+                    {% if inv.status == constant('App\\Enum\\InvoiceStatus::PAID') %}
+                      <span class="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Payée</span>
+                    {% elseif inv.status == constant('App\\Enum\\InvoiceStatus::PENDING_PAYMENT') %}
+                      <span class="inline-block bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm">En attente</span>
+                    {% else %}
+                      <span class="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Brouillon</span>
+                    {% endif %}
+                  </td>
+                  <td class="pr-6 text-right">
+                    {% if inv.status == constant('App\\Enum\\InvoiceStatus::DRAFT') %}
+                      <a href="{{ path('invoice_edit', {id: inv.id}) }}" class="text-sm text-[#155DFC] mr-4">Modifier</a>
+                      <form method="post" action="{{ path('invoice_delete', { id: inv.id }) }}" class="inline-block" onsubmit="return confirm('Supprimer cette facture ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ inv.id) }}">
+                        <button type="submit" class="text-sm text-[#E7000B]">Supprimer</button>
+                      </form>
+                    {% else %}
+                      <a href="#" class="text-sm text-[#155DFC]">Détails</a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td colspan="6" class="py-12 text-center text-gray-500">Aucune facture</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}

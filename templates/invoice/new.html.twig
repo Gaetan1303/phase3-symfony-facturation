@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle facture{% endblock %}
+
+{% block stylesheets %}
+  <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block body %}
+  <main class="min-h-screen bg-gray-50 flex">
+    {# Sidebar component include #}
+    {% include 'components/sidebar.html.twig' %}
+
+
+    <section class="flex-1 p-8">
+      <div class="mx-auto" style="width:896px;">
+        <a href="{{ path('app_invoices') }}" class="text-sm text-gray-500 inline-flex items-center mb-4">← Retour aux factures</a>
+        <h1 class="text-2xl font-bold mb-6">Créer une facture</h1>
+
+        {{ form_start(form, {'attr': {'class':'space-y-6'}}) }}
+
+        <div class="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <h2 class="text-lg font-semibold mb-3">Informations générales</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              {{ form_row(form.client, {'attr': {'class':'w-full'}}) }}
+            </div>
+            <div>
+              {{ form_row(form.createdAt) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Lignes de facture</h2>
+            <button type="button" id="add-line" class="px-3 py-2 bg-white border rounded text-sm">Ajouter une ligne</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="text-sm text-gray-600">
+                  <th class="pb-2">Produit / Service</th>
+                  <th class="pb-2 text-right">Qté</th>
+                  <th class="pb-2 text-right">Prix unitaire</th>
+                  <th class="pb-2 text-right">Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="lines" data-prototype="{{ form_widget(form.lines.vars.prototype)|e('html_attr') }}">
+                {{ form_widget(form.lines) }}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end items-center gap-6">
+          <div class="text-right">
+            <div class="text-sm text-gray-600">Total facture (TTC)</div>
+            <div id="invoice-total" class="text-xl font-bold text-[#155DFC]">0.00 €</div>
+          </div>
+          <div class="flex items-center gap-3">
+            {{ form_widget(form.save_draft, {'attr': {'class':'px-4 py-2 bg-white border rounded'}}) }}
+            {{ form_widget(form.validate, {'attr': {'class':'px-4 py-2 bg-[#155DFC] text-white rounded'}}) }}
+          </div>
+        </div>
+
+        {{ form_end(form) }}
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const container = document.getElementById('lines');
+      if (!container) return;
+      const prototype = container.dataset.prototype;
+      let index = container.querySelectorAll('tr').length || 0;
+
+      function parseNumber(v){
+        v = v || '0';
+        v = String(v).replace(',', '.').replace(/[^0-9.\-]/g,'');
+        return parseFloat(v) || 0;
+      }
+
+      function updateTotals(){
+        const rows = container.querySelectorAll('tr');
+        let total = 0;
+        rows.forEach(row => {
+          const qty = parseNumber(row.querySelector('input[name$="[quantity]"]')?.value);
+          const price = parseNumber(row.querySelector('input[name$="[unitPrice]"]')?.value);
+          const cell = row.querySelector('.line-total');
+          const lineTotal = qty * price;
+          if(cell) cell.textContent = lineTotal.toFixed(2) + ' €';
+          total += lineTotal;
+        });
+        document.getElementById('invoice-total').textContent = total.toFixed(2) + ' €';
+      }
+
+      document.getElementById('add-line').addEventListener('click', function(){
+        const html = prototype.replace(/__name__/g, index);
+        const wrapper = document.createElement('tr');
+        wrapper.innerHTML = html;
+        // add a total cell if not present
+        const totalCell = document.createElement('td');
+        totalCell.className = 'text-right line-total';
+        totalCell.textContent = '0.00 €';
+        wrapper.appendChild(totalCell);
+        container.appendChild(wrapper);
+        index++;
+        // attach listeners on inputs
+        wrapper.querySelectorAll('input').forEach(i => i.addEventListener('input', updateTotals));
+      });
+
+      // attach listeners for existing rows
+      container.querySelectorAll('input').forEach(i => i.addEventListener('input', updateTotals));
+      // initial compute
+      updateTotals();
+    })();
+  </script>
+{% endblock %}
