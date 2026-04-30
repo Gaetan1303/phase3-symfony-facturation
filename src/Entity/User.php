@@ -55,6 +55,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $clients;
 
     /**
+     * @var Collection<int, Product>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Product::class)]
+    private Collection $products;
+
+    /**
      * @var Collection<int, Invoice>
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Invoice::class)]
@@ -64,6 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->clients = new ArrayCollection();
         $this->invoices = new ArrayCollection();
+        $this->products = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -238,6 +245,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->clients->removeElement($client) && $client->getUser() === $this) {
             $client->setUser(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): self
+    {
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+            $product->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): self
+    {
+        if ($this->products->removeElement($product) && $product->getUser() === $this) {
+            $product->setUser(null);
         }
 
         return $this;

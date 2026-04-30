@@ -15,7 +15,7 @@ class InvoiceNumberGenerator
      * Generate FACT-YYYYMMDD-N where N is count in month + 1
      */
     public function generateFor(
-        \DateTimeInterface $date = null
+        ?\DateTimeInterface $date = null
     ): string {
         $date = $date ?: new \DateTime();
         $year = $date->format('Y');

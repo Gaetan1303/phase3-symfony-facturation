@@ -35,6 +35,9 @@ class Invoice
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $paidAt = null;
+
     /**
      * @var Collection<int, InvoiceLine>
      */
@@ -191,6 +194,18 @@ class Invoice
     public function setPdfPath(?string $pdfPath): self
     {
         $this->pdfPath = $pdfPath;
+
+        return $this;
+    }
+
+    public function getPaidAt(): ?\DateTimeInterface
+    {
+        return $this->paidAt;
+    }
+
+    public function setPaidAt(?\DateTimeInterface $paidAt): self
+    {
+        $this->paidAt = $paidAt;
 
         return $this;
     }

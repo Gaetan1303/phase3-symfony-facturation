@@ -69,4 +69,103 @@ class DashboardService
             ];
         }
     }
+
+    /**
+     * Retourne les totaux mensuels (12 éléments) des factures payées pour l'utilisateur et l'année donnée.
+     * Les montants sont en float (totalTtc).
+     */
+    private function isSqlite(): bool
+    {
+        return $this->em->getConnection()->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
+    }
+
+    public function getMonthlyRevenueForUser(User $user, int $year): array
+    {
+        $result = array_fill(0, 12, 0.0);
+        try {
+            $conn = $this->em->getConnection();
+            if ($this->isSqlite()) {
+                $monthExpr = "CAST(strftime('%m', paid_at) AS INTEGER)";
+            } else {
+                $monthExpr = 'EXTRACT(MONTH FROM paid_at)';
+            }
+
+            $sql = sprintf(
+                'SELECT %1$s AS m, COALESCE(SUM(total_ttc), 0) AS total
+                 FROM invoice
+                 WHERE user_id = :uid
+                   AND status = :status
+                   AND paid_at >= :start
+                   AND paid_at < :end
+                 GROUP BY %1$s',
+                $monthExpr
+            );
+
+            $start = (new \DateTimeImmutable(sprintf('%d-01-01', $year)))->format('Y-m-d H:i:s');
+            $end   = (new \DateTimeImmutable(sprintf('%d-01-01', $year + 1)))->format('Y-m-d H:i:s');
+
+            $rows = $conn->executeQuery($sql, [
+                'uid'    => $user->getId(),
+                'status' => \App\Enum\InvoiceStatus::PAID->value,
+                'start'  => $start,
+                'end'    => $end,
+            ])->fetchAllAssociative();
+
+            foreach ($rows as $r) {
+                $m = (int) $r['m'];
+                if ($m >= 1 && $m <= 12) {
+                    $result[$m - 1] = round((float) $r['total'], 2);
+                }
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            // rethrow in dev to surface SQL errors
+            if ($this->em->getConnection()->getDatabasePlatform() !== null && isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'test') {
+                throw $e;
+            }
+
+            return array_fill(0, 12, 0.0);
+        }
+    }
+
+    /**
+     * Retourne un tableau associatif year => total pour les factures payées de l'utilisateur.
+     */
+    public function getYearlyRevenueForUser(User $user): array
+    {
+        $years = [];
+        try {
+            $conn = $this->em->getConnection();
+            if ($this->isSqlite()) {
+                $yearExpr = "CAST(strftime('%Y', paid_at) AS INTEGER)";
+            } else {
+                $yearExpr = 'EXTRACT(YEAR FROM paid_at)';
+            }
+
+            $sql = sprintf(
+                'SELECT %1$s AS y, COALESCE(SUM(total_ttc), 0) AS total
+                 FROM invoice
+                 WHERE user_id = :uid
+                   AND status = :status
+                   AND paid_at IS NOT NULL
+                 GROUP BY %1$s
+                 ORDER BY %1$s ASC',
+                $yearExpr
+            );
+
+            $rows = $conn->executeQuery($sql, [
+                'uid'    => $user->getId(),
+                'status' => \App\Enum\InvoiceStatus::PAID->value,
+            ])->fetchAllAssociative();
+
+            foreach ($rows as $r) {
+                $years[(int) $r['y']] = (float) $r['total'];
+            }
+
+            return $years;
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
 }
