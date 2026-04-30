@@ -60,14 +60,18 @@
 </aside>
 
 <script>
-  function openSidebar() {
-    document.getElementById('sidebar').classList.remove('-translate-x-full');
-    document.getElementById('sidebar-overlay').classList.remove('hidden');
-  }
-  function closeSidebar() {
-    document.getElementById('sidebar').classList.add('-translate-x-full');
-    document.getElementById('sidebar-overlay').classList.add('hidden');
-  }
-  const _btn = document.getElementById('sidebar-toggle');
-  if (_btn) _btn.addEventListener('click', openSidebar);
+  (function(){
+    function openSidebar() {
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+      document.getElementById('sidebar-overlay').classList.remove('hidden');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      document.getElementById('sidebar-overlay').classList.add('hidden');
+    }
+
+    // scope button variable to avoid redeclaration on Turbo navigations
+    const btn = document.getElementById('sidebar-toggle');
+    if (btn) btn.addEventListener('click', openSidebar);
+  })();
 </script>
