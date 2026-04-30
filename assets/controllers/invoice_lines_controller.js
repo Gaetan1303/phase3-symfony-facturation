@@ -10,6 +10,24 @@ export default class extends Controller {
 
     this.initAddCard();
     this.attachExistingRows();
+    // delegated handlers to avoid per-element listeners and stacking
+    this.boundContainerInput = (ev) => {
+      if (!ev) return;
+      const t = ev.target;
+      if (!t) return;
+      if (t.matches && (t.matches('input') || t.matches('select') || t.matches('textarea'))) {
+        this.updateTotals();
+      }
+    };
+    this.boundContainerClick = (ev) => {
+      const btn = ev.target && ev.target.closest ? ev.target.closest('button.js-remove-line') : null;
+      if (btn) {
+        const tr = btn.closest('tr');
+        if (tr) { tr.remove(); this.updateTotals(); }
+      }
+    };
+    this.container.addEventListener('input', this.boundContainerInput);
+    this.container.addEventListener('click', this.boundContainerClick);
     this.updateTotals();
   }
 
@@ -67,23 +85,24 @@ export default class extends Controller {
       // ignore
     }
 
-    const addBtn = document.getElementById('ap_add');
-    if (addBtn) addBtn.addEventListener('click', (ev) => { ev.preventDefault(); this.addFromCard(); });
+    // prefer scoped data-attributes inside the controller element
+    this.addBtn = this.element.querySelector('[data-ap-add]') || this.element.querySelector('[id$="ap_add"]') || document.querySelector('[data-ap-add]');
+    if (this.addBtn) {
+      this.boundAdd = (ev) => { ev.preventDefault(); this.addFromCard(); };
+      this.addBtn.addEventListener('click', this.boundAdd);
+    }
 
-    const apQty = document.getElementById('ap_qty');
-    const apPrice = document.getElementById('ap_price');
-    const apLineTotal = document.getElementById('ap_line_total');
-    if (apQty) apQty.addEventListener('input', () => this.updateAddCardPreview());
-    if (apPrice) apPrice.addEventListener('input', () => this.updateAddCardPreview());
+    this.apQty = this.element.querySelector('[data-ap-qty]') || this.element.querySelector('[id$="ap_qty"]') || document.querySelector('[data-ap-qty]');
+    this.apPrice = this.element.querySelector('[data-ap-price]') || this.element.querySelector('[id$="ap_price"]') || document.querySelector('[data-ap-price]');
+    this.apLineTotal = this.element.querySelector('.line-total');
+    this.apProduct = this.element.querySelector('[data-ap-product]') || this.element.querySelector('[id$="ap_product"]') || document.querySelector('[data-ap-product]');
+
+    if (this.apQty) { this.boundUpdateAddCardPreview = () => this.updateAddCardPreview(); this.apQty.addEventListener('input', this.boundUpdateAddCardPreview); }
+    if (this.apPrice) { this.boundUpdateAddCardPreview = this.boundUpdateAddCardPreview || (() => this.updateAddCardPreview()); this.apPrice.addEventListener('input', this.boundUpdateAddCardPreview); }
     this.updateAddCardPreview();
 
-    const apProduct = document.getElementById('ap_product');
-    if (apProduct) apProduct.addEventListener('input', () => this.updateApBadge());
+    if (this.apProduct) { this.boundUpdateApBadge = () => this.updateApBadge(); this.apProduct.addEventListener('input', this.boundUpdateApBadge); }
     this.updateApBadge();
-  }
-
-  updateAddCardPreview(){
-    const apQty = document.getElementById('ap_qty');
     const apPrice = document.getElementById('ap_price');
     const apLineTotal = document.getElementById('ap_line_total');
     if (!apLineTotal) return;
@@ -191,8 +210,7 @@ export default class extends Controller {
     const actionsArea = document.createElement('div');
     actionsArea.style.width = '48px';
     const removeBtn = document.createElement('button');
-    removeBtn.type = 'button'; removeBtn.className = 'text-sm text-red-600'; removeBtn.textContent = '🗑';
-    removeBtn.addEventListener('click', () => { tr.remove(); this.updateTotals(); });
+    removeBtn.type = 'button'; removeBtn.className = 'text-sm text-red-600 js-remove-line'; removeBtn.textContent = '🗑';
     actionsArea.appendChild(removeBtn);
 
     card.appendChild(prodArea);
@@ -204,9 +222,7 @@ export default class extends Controller {
     td.appendChild(card);
     tr.appendChild(td);
 
-    tr.querySelectorAll('input, select, textarea').forEach(i => {
-      i.addEventListener('input', () => this.updateTotals());
-    });
+    // rely on delegated input listener on container (no per-element listeners)
 
     this.container.appendChild(tr);
     this.index++;
@@ -224,7 +240,6 @@ export default class extends Controller {
         i.classList.add('border');
         i.classList.add('border-[#D1D5DC]');
         i.classList.add('p-2');
-        i.addEventListener('input', () => this.updateTotals());
       });
       const prodCell = row.querySelector('td') || null;
       if (prodCell && !prodCell.querySelector('.w-10')) {
@@ -238,5 +253,16 @@ export default class extends Controller {
         prodCell.insertBefore(badge, prodCell.firstChild);
       }
     });
+  }
+
+  disconnect() {
+    if (this.container) {
+      if (this.boundContainerInput) this.container.removeEventListener('input', this.boundContainerInput);
+      if (this.boundContainerClick) this.container.removeEventListener('click', this.boundContainerClick);
+    }
+    if (this.addBtn && this.boundAdd) this.addBtn.removeEventListener('click', this.boundAdd);
+    if (this.apQty && this.boundUpdateAddCardPreview) this.apQty.removeEventListener('input', this.boundUpdateAddCardPreview);
+    if (this.apPrice && this.boundUpdateAddCardPreview) this.apPrice.removeEventListener('input', this.boundUpdateAddCardPreview);
+    if (this.apProduct && this.boundUpdateApBadge) this.apProduct.removeEventListener('input', this.boundUpdateApBadge);
   }
 }

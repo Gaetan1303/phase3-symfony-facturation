@@ -1,0 +1,11 @@
+<div class="bg-white rounded-lg p-4 border">
+  <form method="post" action="{{ path('invoice_reminder', {id: invoice.id}) }}" data-turbo="true">
+    <input type="hidden" name="_token" value="{{ csrf_token('reminder' ~ invoice.id) }}">
+    <div class="mb-2 text-sm text-gray-700">Message de relance (personnalisable) :</div>
+    <textarea name="message" rows="4" class="w-full rounded border p-2 mb-3">Bonjour {{ invoice.client ? invoice.client.name : '' }},\n\nNous vous rappelons le paiement de la facture {{ invoice.number }} d'un montant de {{ invoice.totalTtc }} €.\n\nMerci de procéder au règlement.\n</textarea>
+    <div class="flex items-center gap-2">
+      <button type="submit" class="px-3 py-2 bg-yellow-600 text-white rounded">Envoyer la relance</button>
+      <button type="button" onclick="document.getElementById('reminder-frame-{{ invoice.id }}').innerHTML = ''" class="px-3 py-2 bg-gray-100 rounded">Fermer</button>
+    </div>
+  </form>
+</div>

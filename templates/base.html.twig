@@ -72,13 +72,12 @@
                                                                 {# Render Symfony flash messages as toasts on full page load #}
                                                                 {% if app.flashes %}
                                                                     <script>
-                                                                        document.addEventListener('DOMContentLoaded', function(){
-                                                                            {% for type, messages in app.flashes %}
-                                                                                {% for msg in messages %}
-                                                                                    showToast({{ include('turbo/inline_toast.html.twig', {'type': type, 'message': msg}) | json_encode | raw }});
-                                                                                {% endfor %}
+                                                                        // show toasts immediately when this fragment is rendered (Turbo executes inline scripts)
+                                                                        {% for type, messages in app.flashes %}
+                                                                            {% for msg in messages %}
+                                                                                showToast({{ include('turbo/inline_toast.html.twig', {'type': type, 'message': msg}) | json_encode | raw }});
                                                                             {% endfor %}
-                                                                        });
+                                                                        {% endfor %}
                                                                     </script>
                                                                 {% endif %}
             </div>

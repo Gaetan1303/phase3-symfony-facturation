@@ -13,10 +13,19 @@
         </form>
 
         {# Mark as paid form with confirmation #}
-        <form method="post" action="{{ path('invoice_mark_paid', {id: invoice.id}) }}" class="inline" data-turbo="true" onsubmit="return confirm('Confirmer : marquer cette facture comme payée ?');">
+        <form method="post" action="{{ path('invoice_mark_paid', {id: invoice.id}) }}" class="inline" data-turbo="true" data-action="submit->confirm#open" data-confirm-message="Confirmer : marquer cette facture comme payée ?">
           <input type="hidden" name="_token" value="{{ csrf_token('mark_paid' ~ invoice.id) }}">
           <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-sm">Marquer comme payée</button>
         </form>
+        
+        {# Send invoice by email #}
+        <form method="post" action="{{ path('invoice_send', {id: invoice.id}) }}" class="inline" data-turbo="true">
+          <input type="hidden" name="_token" value="{{ csrf_token('send_invoice' ~ invoice.id) }}">
+          <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-sm">Envoyer par mail</button>
+        </form>
+
+        {# Reminder: loads a small form into the turbo frame to customize message #}
+        <a href="{{ path('invoice_reminder', {id: invoice.id}) }}" data-turbo-frame="reminder-frame-{{ invoice.id }}" class="inline-flex items-center px-4 py-2 bg-yellow-50 text-yellow-800 rounded-md text-sm">Relancer</a>
       {% endif %}
 
       {% if invoice.pdfPath %}
@@ -30,6 +39,7 @@
       <div class="text-2xl font-semibold">{{ invoice.totalTtc }} €</div>
     </div>
   </div>
+  <turbo-frame id="reminder-frame-{{ invoice.id }}"></turbo-frame>
 
   <div class="grid grid-cols-2 gap-6 mb-6">
     <div>

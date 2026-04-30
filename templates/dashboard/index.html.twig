@@ -51,12 +51,12 @@
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-medium text-gray-900">Chiffre d'affaires</h2>
               <form method="get" class="flex items-center gap-3">
-                <select name="period" class="rounded border px-2 py-1" onchange="this.form.submit()">
+                <select name="period" class="rounded border px-2 py-1" onchange="this.form.requestSubmit()">
                   <option value="monthly" {{ period == 'monthly' ? 'selected' : '' }}>Mensuel</option>
                   <option value="yearly" {{ period == 'yearly' ? 'selected' : '' }}>Annuel</option>
                 </select>
                 {% if period == 'monthly' %}
-                  <select name="year" class="rounded border px-2 py-1" onchange="this.form.submit()">
+                  <select name="year" class="rounded border px-2 py-1" onchange="this.form.requestSubmit()">
                     {% set yrs = availableYears is defined and availableYears ? availableYears : [year] %}
                     {% for y in yrs %}
                       <option value="{{ y }}" {{ y == year ? 'selected' : '' }}>{{ y }}</option>
@@ -67,7 +67,7 @@
             </div>
 
             <div class="w-full">
-              <div class="w-full h-80">
+              <div class="w-full h-80" data-controller="revenue-chart" data-revenue-chart-labels-value='{{ chart.labels|json_encode|raw }}' data-revenue-chart-data-value='{{ chart.data|json_encode|raw }}'>
                 <canvas id="revenueChart" class="w-full h-full"></canvas>
               </div>
             </div>
@@ -91,30 +91,5 @@
   {{ parent() }}
   {# Load a specific Chart.js UMD build and initialize chart on Turbo navigation #}
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script>
-    (function(){
-      const labels = {{ chart.labels|json_encode|raw }};
-      const data = {{ chart.data|json_encode|raw }};
-
-      function initRevenueChart() {
-        try {
-          const canvas = document.getElementById('revenueChart');
-          if (!canvas) return;
-          const ctx = canvas.getContext && canvas.getContext('2d');
-          if (!ctx) return;
-          if (typeof Chart === 'undefined') return;
-          const numericData = (Array.isArray(data) ? data : []).map(v => Number(v) || 0);
-          if (canvas._chartInstance) { try { canvas._chartInstance.destroy(); } catch(e){} }
-          canvas._chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: labels, datasets: [{ label: "Chiffre d'affaires", data: numericData, backgroundColor: 'rgba(37,99,235,0.8)', borderColor: 'rgba(37,99,235,1)', borderWidth: 1 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value){ return value + ' €'; } } } }, plugins: { tooltip: { callbacks: { label: function(ctx){ return ctx.formattedValue + ' €'; } } } } }
-          });
-        } catch (e) { console.error(e); }
-      }
-
-      document.addEventListener('DOMContentLoaded', initRevenueChart);
-      document.addEventListener('turbo:load', initRevenueChart);
-    })();
-  </script>
+  {# Chart initialization handled by Stimulus controller `revenue_chart_controller.js` #}
 {% endblock %}

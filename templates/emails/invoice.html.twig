@@ -1,0 +1,13 @@
+<html>
+  <body>
+    {% set sender = invoice.user and invoice.user.companyName
+      ? invoice.user.companyName
+      : (invoice.user and (invoice.user.firstName or invoice.user.lastName)
+        ? (invoice.user.firstName|default('') ~ ' ' ~ invoice.user.lastName|default(''))|trim
+        : (invoice.user ? invoice.user.email : 'Votre société')) %}
+    <p>Bonjour {{ invoice.client ? invoice.client.name : 'client' }},</p>
+    <p>Vous trouverez en pièce jointe la facture <strong>{{ invoice.number }}</strong> d'un montant de <strong>{{ invoice.totalTtc }} €</strong>.</p>
+    <p>Merci de procéder au paiement selon les modalités indiquées sur la facture.</p>
+    <p>Cordialement,<br>{{ sender }}</p>
+  </body>
+</html>
