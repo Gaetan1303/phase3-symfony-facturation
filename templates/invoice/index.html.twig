@@ -16,81 +16,114 @@
         </a>
       </div>
 
-      <div class="bg-white rounded-2xl shadow p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-3" id="invoice-filters">
-              <button data-filter="all" class="px-4 py-2 bg-[#EFF6FF] text-[#1447E6] rounded-full text-sm">Toutes</button>
-              <button data-filter="draft" class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">Brouillons</button>
-              <button data-filter="pending_payment" class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">En attente</button>
-              <button data-filter="paid" class="px-4 py-2 bg-white border border-gray-100 rounded-full text-sm">Payées</button>
+      <div class="bg-white rounded-2xl shadow p-6 space-y-8">
+        <div>
+          <h3 class="text-lg font-semibold mb-3">En attente de paiement</h3>
+          {% if pending is defined and pending is not empty %}
+            <div class="overflow-x-auto">
+              <table class="w-full border-collapse">
+                <thead class="text-sm text-gray-600 border-b">
+                  <tr style="height:52.5px;">
+                    <th class="text-left pl-6">Numéro</th>
+                    <th class="text-left px-6">Date</th>
+                    <th class="text-left px-6">Client</th>
+                    <th class="text-right px-6">Total TTC</th>
+                    <th class="text-left px-6">Statut</th>
+                    <th class="text-right pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white">
+                  {% for inv in pending %}
+                    <tr class="align-middle" style="height:48px;">
+                      <td class="pl-6 text-base text-gray-800"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-gray-800 hover:underline">{{ inv.number }}</a></td>
+                      <td class="px-6 text-sm text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
+                      <td class="px-6 text-base text-gray-800">{{ inv.client ? inv.client.name : '-' }}</td>
+                      <td class="px-6 text-right text-base font-semibold text-gray-800">{{ inv.totalTtc }} €</td>
+                      <td class="px-6">{% include 'components/status_badge.html.twig' with {'status': inv.status} %}</td>
+                      <td class="pr-6 text-right text-sm"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-[#155DFC]">Détails</a></td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
-          <div class="text-sm text-gray-500">&nbsp;</div>
+          {% else %}
+            <div class="py-6 text-sm text-gray-500">Aucune facture en attente.</div>
+          {% endif %}
         </div>
 
-        <div class="w-full overflow-hidden">
-          <table class="w-full border-collapse">
-            <thead class="text-sm text-gray-600 border-b">
-              <tr style="height:52.5px;">
-                <th class="text-left pl-6">Numéro</th>
-                <th class="text-left px-6">Date</th>
-                <th class="text-left px-6">Client</th>
-                <th class="text-right px-6">Total TTC</th>
-                <th class="text-left px-6">Statut</th>
-                <th class="text-right pr-6">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white">
-              {% for inv in invoices %}
-                <tr class="align-middle" style="height:48px;" data-status="{{ inv.status.value }}">
-                  <td class="pl-6 text-base text-gray-800"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-gray-800 hover:underline">{{ inv.number }}</a></td>
-                  <td class="px-6 text-sm text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
-                  <td class="px-6 text-base text-gray-800">{{ inv.client ? inv.client.name : '-' }}</td>
-                  <td class="px-6 text-right text-base font-semibold text-gray-800">{{ inv.totalTtc }} €</td>
-                  <td class="px-6">
-                    {% include 'components/status_badge.html.twig' with {'status': inv.status} %}
-                  </td>
-                  <td class="pr-6 text-right text-sm">
-                    {% if inv.status == constant('App\\Enum\\InvoiceStatus::DRAFT') %}
-                      <a href="{{ path('invoice_edit', {id: inv.id}) }}" class="text-[#155DFC] mr-4">Modifier</a>
-                      <form method="post" action="{{ path('invoice_delete', { id: inv.id }) }}" class="inline-block" onsubmit="return confirm('Supprimer cette facture ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ inv.id) }}">
-                        <button type="submit" class="text-[#E7000B]">Supprimer</button>
-                      </form>
-                    {% else %}
-                      <a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-[#155DFC]">Détails</a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% else %}
-                <tr><td colspan="6" class="py-12 text-center text-gray-500">Aucune facture</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Payées</h3>
+          {% if paid is defined and paid is not empty %}
+            <div class="overflow-x-auto">
+              <table class="w-full border-collapse">
+                <thead class="text-sm text-gray-600 border-b">
+                  <tr style="height:52.5px;">
+                    <th class="text-left pl-6">Numéro</th>
+                    <th class="text-left px-6">Date</th>
+                    <th class="text-left px-6">Client</th>
+                    <th class="text-right px-6">Total TTC</th>
+                    <th class="text-left px-6">Statut</th>
+                    <th class="text-right pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white">
+                  {% for inv in paid %}
+                    <tr class="align-middle" style="height:48px;">
+                      <td class="pl-6 text-base text-gray-800"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-gray-800 hover:underline">{{ inv.number }}</a></td>
+                      <td class="px-6 text-sm text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
+                      <td class="px-6 text-base text-gray-800">{{ inv.client ? inv.client.name : '-' }}</td>
+                      <td class="px-6 text-right text-base font-semibold text-gray-800">{{ inv.totalTtc }} €</td>
+                      <td class="px-6">{% include 'components/status_badge.html.twig' with {'status': inv.status} %}</td>
+                      <td class="pr-6 text-right text-sm"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-[#155DFC]">Détails</a></td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="py-6 text-sm text-gray-500">Aucune facture payée.</div>
+          {% endif %}
         </div>
-        <script>
-          (function(){
-            const filters = document.getElementById('invoice-filters');
-            if (!filters) return;
-            const buttons = filters.querySelectorAll('button[data-filter]');
-            const rows = document.querySelectorAll('tbody tr[data-status]');
 
-            function setActive(btn){
-              buttons.forEach(b => b.classList.remove('bg-[#EFF6FF]', 'text-[#1447E6]'));
-              btn.classList.add('bg-[#EFF6FF]','text-[#1447E6]');
-            }
-
-            buttons.forEach(btn => {
-              btn.addEventListener('click', () => {
-                const filter = btn.dataset.filter;
-                setActive(btn);
-                rows.forEach(r => {
-                  if (filter === 'all' || r.dataset.status === filter) r.style.display = '';
-                  else r.style.display = 'none';
-                });
-              });
-            });
-          })();
-        </script>
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Brouillons</h3>
+          {% if drafts is defined and drafts is not empty %}
+            <div class="overflow-x-auto">
+              <table class="w-full border-collapse">
+                <thead class="text-sm text-gray-600 border-b">
+                  <tr style="height:52.5px;">
+                    <th class="text-left pl-6">Numéro</th>
+                    <th class="text-left px-6">Date</th>
+                    <th class="text-left px-6">Client</th>
+                    <th class="text-right px-6">Total TTC</th>
+                    <th class="text-left px-6">Statut</th>
+                    <th class="text-right pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white">
+                  {% for inv in drafts %}
+                    <tr class="align-middle" style="height:48px;">
+                      <td class="pl-6 text-base text-gray-800"><a href="{{ path('invoice_show', {id: inv.id}) }}" class="text-gray-800 hover:underline">{{ inv.number }}</a></td>
+                      <td class="px-6 text-sm text-gray-500">{{ inv.createdAt|date('d/m/Y') }}</td>
+                      <td class="px-6 text-base text-gray-800">{{ inv.client ? inv.client.name : '-' }}</td>
+                      <td class="px-6 text-right text-base font-semibold text-gray-800">{{ inv.totalTtc }} €</td>
+                      <td class="px-6">{% include 'components/status_badge.html.twig' with {'status': inv.status} %}</td>
+                      <td class="pr-6 text-right text-sm">
+                        <a href="{{ path('invoice_edit', {id: inv.id}) }}" class="text-[#155DFC] mr-4">Modifier</a>
+                        <form method="post" action="{{ path('invoice_delete', { id: inv.id }) }}" class="inline-block" data-turbo="false">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ inv.id) }}">
+                          <button type="button" class="text-[#E7000B]" data-action="confirm#open" data-confirm-message="Supprimer la facture {{ inv.number }} ?">Supprimer</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="py-6 text-sm text-gray-500">Aucun brouillon.</div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>

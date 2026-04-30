@@ -1,0 +1,67 @@
+<div id="invoice-form" data-controller="invoice-lines">
+  {{ form_start(form, {'attr': {'class':'space-y-6', 'data-turbo': 'false'}}) }}
+
+  <div class="bg-white border border-[#F3F4F6] rounded-[14px] p-[25px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] mb-6">
+    <h2 class="text-[18px] font-semibold text-[#101828] mb-3">Informations générales</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        {{ form_row(form.client, {'attr': {'class':'w-full rounded-[8px] border border-[#D1D5DC] p-2'}}) }}
+      </div>
+      <div>
+        {{ form_row(form.createdAt, {'attr': {'class':'w-full rounded-[8px] border border-[#D1D5DC] p-2'}}) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border border-[#F3F4F6] rounded-[14px] p-[16px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-[18px] font-semibold text-[#101828]">Lignes de la facture</h2>
+    </div>
+
+    <div class="overflow-hidden">
+      <table class="w-full">
+        <thead class="text-sm text-[#364153]">
+          <tr class="h-[44.5px] border-b border-[#000000]">
+            <th class="text-left font-semibold pl-2">Produit / Service</th>
+            <th class="text-right font-semibold pr-4">Qté</th>
+            <th class="text-right font-semibold pr-4">Prix unitaire</th>
+            <th class="text-right font-semibold pr-4">Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="lines" data-prototype="{{ form_widget(form.lines.vars.prototype)|e('html_attr') }}">
+            {% for i, line in form.lines %}
+              <tr>
+                <td colspan="5" style="padding:0">
+                  {% include 'components/add_product_card.html.twig' with {
+                    'prefix': 'line_' ~ i ~ '_',
+                    'label_field': form_widget(line.label),
+                    'qty_field': form_widget(line.quantity),
+                    'price_field': form_widget(line.unitPrice),
+                    'show_add_button': false,
+                    'line_total': (line.vars.data.getLineTotal() is defined ? (line.vars.data.getLineTotal() ~ ' €') : '0.00 €')
+                  } %}
+                </td>
+              </tr>
+            {% else %}
+            {% endfor %}
+          </tbody>
+      </table>
+    </div>
+
+      {% include 'components/add_product_card.html.twig' %}
+  </div>
+
+  <div class="flex justify-end items-center gap-6 mb-6">
+    <div class="text-right">
+      <div class="text-sm text-[#101828]">Total facture (TTC)</div>
+      <div id="invoice-total" class="text-[18px] font-bold text-[#155DFC]">0.00 €</div>
+    </div>
+    <div class="flex items-center gap-3">
+      {{ form_widget(form.save_draft, {'attr': {'class':'px-4 py-2 bg-white border border-[#D1D5DC] rounded-[8px] text-[#364153]'}}) }}
+      {{ form_widget(form.validate, {'attr': {'class':'px-4 py-2 bg-[#155DFC] text-white rounded-[8px]'}}) }}
+    </div>
+  </div>
+
+  {{ form_end(form) }}
+</div>

@@ -29,8 +29,11 @@ class InvoiceController extends AbstractController
 
         $user = $this->getUser();
         $invoices = $this->em->getRepository(Invoice::class)->findBy(['user' => $user], ['createdAt' => 'DESC']);
+        $pending = $this->em->getRepository(Invoice::class)->findBy(['user' => $user, 'status' => \App\Enum\InvoiceStatus::PENDING_PAYMENT], ['createdAt' => 'DESC']);
+        $paid = $this->em->getRepository(Invoice::class)->findBy(['user' => $user, 'status' => \App\Enum\InvoiceStatus::PAID], ['createdAt' => 'DESC']);
+        $drafts = $this->em->getRepository(Invoice::class)->findBy(['user' => $user, 'status' => \App\Enum\InvoiceStatus::DRAFT], ['createdAt' => 'DESC']);
 
-        return $this->render('invoice/index.html.twig', ['invoices' => $invoices]);
+        return $this->render('invoice/index.html.twig', ['invoices' => $invoices, 'pending' => $pending, 'paid' => $paid, 'drafts' => $drafts]);
     }
 
     #[Route('/new', name: 'invoice_new', methods: ['GET', 'POST'])]
@@ -42,12 +45,34 @@ class InvoiceController extends AbstractController
         $form = $this->createForm(InvoiceType::class, $invoice, ['user' => $this->getUser()]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $invoiceManager->persistInvoice($invoice, $this->getUser(), $form->get('validate')->isClicked());
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $invoiceManager->persistInvoice($invoice, $this->getUser(), $form->get('validate')->isClicked());
+                $message = 'Facture enregistrée.';
+                $this->addFlash('success', $message);
 
-            $this->addFlash('success', 'Facture enregistrée.');
+                // Turbo: return toast stream and instruct client to visit invoices list
+                $turboFrame = $request->headers->get('Turbo-Frame');
+                if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+                    $url = $this->generateUrl('app_invoices');
+                    $content = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => 'success']);
+                    return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html', 'Turbo-Location' => $url]);
+                }
 
-            return $this->redirectToRoute('app_invoices');
+                return $this->redirectToRoute('app_invoices');
+            }
+
+            // form submitted but invalid: render replacement of form + error toast for Turbo
+            $message = 'Le formulaire contient des erreurs.';
+            $this->addFlash('error', $message);
+            $turboFrame = $request->headers->get('Turbo-Frame');
+            if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+                $formHtml = $this->renderView('invoice/_form_fragment.html.twig', ['form' => $form->createView()]);
+                $replace = $this->renderView('turbo/replace_id.html.twig', ['target' => 'invoice-form', 'html' => $formHtml]);
+                $toast = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => 'error']);
+                $content = $replace . "\n" . $toast;
+                return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+            }
         }
 
         return $this->render('invoice/new.html.twig', ['form' => $form->createView()]);
@@ -70,11 +95,31 @@ class InvoiceController extends AbstractController
         $form = $this->createForm(InvoiceType::class, $invoice, ['user' => $this->getUser()]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $invoiceManager->persistInvoice($invoice, $this->getUser(), $form->get('validate')->isClicked());
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $invoiceManager->persistInvoice($invoice, $this->getUser(), $form->get('validate')->isClicked());
+                $message = 'Facture mise à jour.';
+                $this->addFlash('success', $message);
+                $turboFrame = $request->headers->get('Turbo-Frame');
+                if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+                    $url = $this->generateUrl('app_invoices');
+                    $content = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => 'success']);
+                    return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html', 'Turbo-Location' => $url]);
+                }
 
-            $this->addFlash('success', 'Facture mise à jour.');
-            return $this->redirectToRoute('app_invoices');
+                return $this->redirectToRoute('app_invoices');
+            }
+
+            $message = 'Le formulaire contient des erreurs.';
+            $this->addFlash('error', $message);
+            $turboFrame = $request->headers->get('Turbo-Frame');
+            if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+                $formHtml = $this->renderView('invoice/_form_fragment.html.twig', ['form' => $form->createView(), 'invoice' => $invoice]);
+                $replace = $this->renderView('turbo/replace_id.html.twig', ['target' => 'invoice-form', 'html' => $formHtml]);
+                $toast = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => 'error']);
+                $content = $replace . "\n" . $toast;
+                return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+            }
         }
 
         return $this->render('invoice/edit.html.twig', ['form' => $form->createView(), 'invoice' => $invoice]);
@@ -99,7 +144,14 @@ class InvoiceController extends AbstractController
                 $this->em->remove($invoice);
             });
 
-            $this->addFlash('success', 'Facture supprimée.');
+            $message = 'Facture supprimée.';
+            $this->addFlash('success', $message);
+
+            $turboFrame = $request->headers->get('Turbo-Frame');
+            if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+                $content = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => 'success']);
+                return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+            }
         }
 
         return $this->redirectToRoute('app_invoices');
@@ -137,26 +189,50 @@ class InvoiceController extends AbstractController
             return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
         }
 
+        $type = 'success';
+        $message = '';
+        $ok = false;
         try {
             $path = $invoiceManager->generatePdf($invoice);
             if ($path) {
                 $this->em->wrapInTransaction(function () use ($invoice, $path) { $invoice->setPdfPath($path); $this->em->persist($invoice); });
-
-                // Serve the generated file immediately for download (one-click flow)
-                $projectDir = $this->getParameter('kernel.project_dir');
-                $fullPath = $projectDir . DIRECTORY_SEPARATOR . $path;
-                if (file_exists($fullPath)) {
-                    $response = new BinaryFileResponse($fullPath);
-                    $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $invoice->getNumber() . '.pdf');
-                    return $response;
-                }
-
-                $this->addFlash('success', 'PDF généré et stocké.');
+                $ok = true;
+                $message = 'PDF généré et stocké.';
+                $this->addFlash('success', $message);
             } else {
-                $this->addFlash('error', 'Échec de la génération du PDF.');
+                $ok = false;
+                $type = 'error';
+                $message = 'Échec de la génération du PDF.';
+                $this->addFlash('error', $message);
             }
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Erreur lors de la génération du PDF.');
+            $ok = false;
+            $type = 'error';
+            $message = 'Erreur lors de la génération du PDF.';
+            $this->addFlash('error', $message);
+        }
+
+        // If Turbo request, return streams: replace frame (on success) + toast
+        $turboFrame = $request->headers->get('Turbo-Frame');
+        if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+            $parts = [];
+            if ($ok) {
+                $parts[] = $this->renderView('turbo/replace_invoice_frame.html.twig', ['invoice' => $invoice]);
+            }
+            $parts[] = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => $type]);
+            $content = implode("\n", $parts);
+            return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+        }
+
+        // Non-Turbo flow: if file exists, serve for download, otherwise redirect back with flash
+        if ($ok && isset($path)) {
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $fullPath = $projectDir . DIRECTORY_SEPARATOR . $path;
+            if (file_exists($fullPath)) {
+                $response = new BinaryFileResponse($fullPath);
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $invoice->getNumber() . '.pdf');
+                return $response;
+            }
         }
 
         return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
@@ -203,5 +279,58 @@ class InvoiceController extends AbstractController
         $response = new BinaryFileResponse($fullPath);
         $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $invoice->getNumber() . '.pdf');
         return $response;
+    }
+
+    #[Route('/{id}/mark-paid', name: 'invoice_mark_paid', methods: ['POST'])]
+    public function markPaid(Invoice $invoice, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if (!$this->isCsrfTokenValid('mark_paid' . $invoice->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        // Only pending payment invoices can be marked paid
+        if ($invoice->getStatus() !== \App\Enum\InvoiceStatus::PENDING_PAYMENT) {
+            $this->addFlash('error', 'Seules les factures en attente de paiement peuvent être marquées comme payées.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        $ok = false;
+        $message = '';
+        $type = 'success';
+        try {
+            $this->em->wrapInTransaction(function () use ($invoice) {
+                $invoice->setStatus(\App\Enum\InvoiceStatus::PAID);
+                $this->em->persist($invoice);
+            });
+            $ok = true;
+            $message = 'Facture marquée comme payée.';
+            $this->addFlash('success', $message);
+        } catch (\Throwable $e) {
+            $ok = false;
+            $type = 'error';
+            $message = 'Impossible de marquer la facture comme payée.';
+            $this->addFlash('error', $message);
+        }
+
+        // If this request comes from Turbo (frame/stream), return Turbo Streams: replace frame + append toast (or only toast on error)
+        $turboFrame = $request->headers->get('Turbo-Frame');
+        if ($turboFrame || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+            $parts = [];
+            if ($ok) {
+                $parts[] = $this->renderView('turbo/replace_invoice_frame.html.twig', ['invoice' => $invoice]);
+            }
+            $parts[] = $this->renderView('turbo/toast_stream.html.twig', ['message' => $message, 'type' => $type]);
+            $content = implode("\n", $parts);
+            return new Response($content, 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+        }
+
+        return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
     }
 }

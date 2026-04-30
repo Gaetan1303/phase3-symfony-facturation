@@ -20,15 +20,19 @@ class ProductController extends AbstractController
     #[Route('/', name: 'product_index', methods: ['GET'])]
     public function index(): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $user = $this->getUser();
         $products = $this->em->getRepository(Product::class)->findBy(['user' => $user], ['name' => 'ASC']);
 
         return $this->render('product/index.html.twig', ['products' => $products]);
     }
 
-    #[Route('/new', name: 'product_new', methods: ['GET','POST'])]
+    #[Route('/new', name: 'product_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
@@ -38,18 +42,25 @@ class ProductController extends AbstractController
             $this->em->persist($product);
             $this->em->flush();
 
-            $this->addFlash('success', 'Produit créé.');
+            $this->addFlash('success', 'Produit créé avec succès.');
 
             return $this->redirectToRoute('product_index');
         }
 
-        return $this->render('product/new.html.twig', ['form' => $form->createView()]);
+        $user = $this->getUser();
+        $products = $this->em->getRepository(Product::class)->findBy(['user' => $user], ['name' => 'ASC']);
+
+        return $this->render('product/new.html.twig', [
+            'form' => $form,
+            'products' => $products,
+        ]);
     }
 
-    #[Route('/{id}/edit', name: 'product_edit', methods: ['GET','POST'])]
-    public function edit(Request $request, Product $product): Response
+    #[Route('/{id}/edit', name: 'product_edit', methods: ['GET', 'POST'])]
+    public function edit(Product $product, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
+
         if ($product->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
         }
@@ -59,25 +70,32 @@ class ProductController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->flush();
-            $this->addFlash('success', 'Produit mis à jour.');
+
+            $this->addFlash('success', 'Produit modifié avec succès.');
 
             return $this->redirectToRoute('product_index');
         }
 
-        return $this->render('product/edit.html.twig', ['form' => $form->createView(), 'product' => $product]);
+        return $this->render('product/edit.html.twig', [
+            'form' => $form,
+            'product' => $product,
+        ]);
     }
 
     #[Route('/{id}/delete', name: 'product_delete', methods: ['POST'])]
-    public function delete(Request $request, Product $product): Response
+    public function delete(Product $product, Request $request): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         if ($product->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
         }
 
-        if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
             $this->em->remove($product);
             $this->em->flush();
-            $this->addFlash('success', 'Produit supprimé.');
+
+            $this->addFlash('success', 'Produit supprimé avec succès.');
         }
 
         return $this->redirectToRoute('product_index');

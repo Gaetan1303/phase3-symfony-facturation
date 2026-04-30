@@ -1,35 +1,101 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Produits{% endblock %}
+{% block title %}Mes produits{% endblock %}
+
+{% block stylesheets %}
+  <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
 
 {% block body %}
-  <div class="container">
-    <h1>Produits</h1>
+  <section class="flex-1 min-w-0">
+    <div class="md:hidden flex items-center gap-3 p-4 bg-white border-b border-[#E5E7EB]">
+      <span class="font-semibold text-[#101828]">Mes produits</span>
+    </div>
 
-    <a class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" href="{{ path('product_new') }}">Nouveau produit</a>
+    <div class="p-4 md:p-8 w-full">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 class="text-2xl font-bold text-[#101828]">Mes produits</h1>
+        <a href="{{ path('product_new') }}" class="inline-flex items-center px-4 py-2 bg-[#155DFC] text-white rounded-lg hover:bg-[#1447E6] transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span class="text-sm">Ajouter un produit</span>
+        </a>
+      </div>
 
-    <table class="table">
-      <thead>
-        <tr><th>Nom</th><th>Prix</th><th>Unité</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for p in products %}
-          <tr>
-            <td>{{ p.name }}</td>
-            <td>{{ p.price }} €</td>
-            <td>{{ p.unit.value|default(p.unit) }}</td>
-            <td>
-              <a class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300" href="{{ path('product_edit', {'id': p.id}) }}">Modifier</a>
-              <form method="post" action="{{ path('product_delete', {'id': p.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce produit ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
-                <button class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700">Supprimer</button>
-              </form>
-            </td>
-          </tr>
-        {% else %}
-          <tr><td colspan="4">Aucun produit</td></tr>
+      {% if app.flashes %}
+        {% for type, messages in app.flashes %}
+          {% for message in messages %}
+            <div class="mb-4 p-4 rounded-md {% if type == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% endif %}
+
+      <div class="hidden md:block overflow-x-auto">
+        <div class="bg-white overflow-hidden" style="min-width:640px;">
+          <div class="w-full flex flex-col">
+            <div class="bg-[#F9FAFB] rounded-t-[14px] border-b border-gray-200">
+              <div class="grid items-center" style="grid-template-columns: 300px 1fr 180px; height:48px;">
+                <div class="px-4 text-sm font-semibold text-[#101828]">Produit</div>
+                <div class="px-4 text-sm font-semibold text-[#101828]">Description</div>
+                <div class="px-4 text-sm font-semibold text-[#101828] text-right">Actions</div>
+              </div>
+            </div>
+            <div class="flex-1 overflow-hidden">
+              {% for product in products %}
+                <div class="grid" style="grid-template-columns: 300px 1fr 180px; border-bottom:1px solid #F3F4F6; background:#FFFFFF; height:48px; align-items:center;">
+                  <div class="px-4 text-base text-[#101828] truncate">{{ product.name }}</div>
+                  <div class="px-4 text-sm text-[#4A5565] truncate">{{ product.description ?? '-' }}</div>
+                  <div class="flex justify-end items-center gap-3 pr-4">
+                    <a href="{{ path('product_edit', { id: product.id }) }}" class="inline-flex items-center text-[#155DFC] hover:text-[#1447E6]">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21v-3.75L15.75 4.5l3.75 3.75L6.75 21H3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                    <form method="post" action="{{ path('product_delete', { id: product.id }) }}" class="inline-block m-0" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                      <button type="submit" class="inline-flex items-center text-[#E7000B] hover:text-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="3 6 5 6 21 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% else %}
+                <div class="py-8 text-center text-[#6B7280]">Vous n'avez pas encore de produits.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:hidden flex flex-col gap-3">
+        {% for product in products %}
+          <div class="bg-white rounded-xl border border-[#F3F4F6] p-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-semibold text-[#101828]">{{ product.name }}</div>
+                <div class="text-sm text-[#4A5565] mt-0.5">{{ product.description ?? '-' }}</div>
+                <div class="text-xs text-[#6A7282] mt-1">{{ product.price }} € • {{ product.unit.name|lower }}</div>
+              </div>
+              <div class="flex items-center gap-3 ml-4 shrink-0">
+                <a href="{{ path('product_edit', { id: product.id }) }}" class="inline-flex items-center text-[#155DFC] hover:text-[#1447E6]">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21v-3.75L15.75 4.5l3.75 3.75L6.75 21H3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+                <form method="post" action="{{ path('product_delete', { id: product.id }) }}" class="inline-block m-0" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                  <button type="submit" class="inline-flex items-center text-[#E7000B] hover:text-red-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="3 6 5 6 21 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="py-8 text-center text-[#6B7280]">Vous n'avez pas encore de produits.</div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </section>
 {% endblock %}

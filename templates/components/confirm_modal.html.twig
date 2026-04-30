@@ -1,0 +1,11 @@
+<div id="confirm-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center" aria-hidden="true">
+  <div class="fixed inset-0 bg-black bg-opacity-30 z-40" data-action="click->confirm#cancel"></div>
+  <div class="bg-white rounded-lg shadow-lg max-w-lg w-full mx-4 p-6 z-50 pointer-events-auto">
+    <h3 class="text-lg font-semibold mb-2">Confirmer</h3>
+    <p id="confirm-modal-message" class="text-sm text-gray-700 mb-4">Êtes-vous sûr ?</p>
+    <div class="flex justify-end gap-3">
+      <button type="button" data-action="confirm#cancel" class="px-4 py-2 rounded bg-gray-100 text-gray-700">Annuler</button>
+      <button type="button" id="confirm-modal-confirm" data-action="confirm#confirm" class="px-4 py-2 rounded bg-red-600 text-white">Confirmer</button>
+    </div>
+  </div>
+</div>

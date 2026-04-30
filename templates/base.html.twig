@@ -26,8 +26,61 @@
         <div class="min-h-screen bg-gray-50 flex">
             {% block sidebar %}{% include 'components/sidebar.html.twig' %}{% endblock %}
 
-            <div class="flex-1">
-                {% block body %}{% endblock %}
+            <div class="flex-1" data-controller="confirm">
+                                                                {% block body %}{% endblock %}
+
+                                                                {# Inline flash banners (in addition to toasts) #}
+                                                                {% if app.flashes %}
+                                                                    <div class="max-w-4xl mx-auto px-4 py-4">
+                                                                        {% for type, messages in app.flashes %}
+                                                                            {% for msg in messages %}
+                                                                                <div class="mb-3 p-3 rounded border {{ type == 'success' ? 'bg-green-50 border-green-200 text-green-800' : type == 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-gray-50 border-gray-200 text-gray-800' }}">
+                                                                                    {{ msg }}
+                                                                                </div>
+                                                                            {% endfor %}
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                {% endif %}
+
+                                                                <!-- Toast container for Turbo messages -->
+                                <div id="toasts" class="fixed top-4 right-4 z-50 space-y-2"></div>
+                                                                {# Confirm modal used for replacement of native confirm() #}
+                                                                {% include 'components/confirm_modal.html.twig' %}
+                                <script>
+                                    // Simple toast auto-dismiss behavior
+                                    (function(){
+                                        window.showToast = function(html, timeout = 3500){
+                                            const container = document.getElementById('toasts');
+                                            if (!container) return;
+                                            const wrapper = document.createElement('div');
+                                            wrapper.innerHTML = html;
+                                            const toast = wrapper.firstElementChild;
+                                            if (!toast) return;
+                                            toast.classList.add('opacity-0','transform','translate-y-2','transition','duration-200');
+                                            container.appendChild(toast);
+                                            // force reflow
+                                            void toast.offsetWidth;
+                                            toast.classList.remove('opacity-0','translate-y-2');
+                                            // auto remove
+                                            setTimeout(() => {
+                                                toast.classList.add('opacity-0','translate-y-2');
+                                                setTimeout(() => toast.remove(), 300);
+                                            }, timeout);
+                                        };
+                                    })();
+                                </script>
+                                                                {# Render Symfony flash messages as toasts on full page load #}
+                                                                {% if app.flashes %}
+                                                                    <script>
+                                                                        document.addEventListener('DOMContentLoaded', function(){
+                                                                            {% for type, messages in app.flashes %}
+                                                                                {% for msg in messages %}
+                                                                                    showToast({{ include('turbo/inline_toast.html.twig', {'type': type, 'message': msg}) | json_encode | raw }});
+                                                                                {% endfor %}
+                                                                            {% endfor %}
+                                                                        });
+                                                                    </script>
+                                                                {% endif %}
             </div>
         </div>
     </body>
