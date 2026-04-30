@@ -1,0 +1,16 @@
+<div role="toast" class="max-w-sm w-full rounded-lg px-4 py-3 shadow flex items-start gap-3" data-timeout="3500">
+  {% set t = type|default('success') %}
+  <div class="flex-shrink-0 mt-0.5">
+    {% if t == 'success' %}
+      <div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center">✓</div>
+    {% elseif t == 'error' %}
+      <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center">!</div>
+    {% else %}
+      <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">i</div>
+    {% endif %}
+  </div>
+  <div class="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2">
+    <div class="text-sm text-gray-900">{{ message }}</div>
+  </div>
+  <button type="button" class="text-gray-400 ml-2" onclick="this.closest('[role=toast]')?.remove?.()">✕</button>
+</div>
