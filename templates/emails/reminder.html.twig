@@ -1,0 +1,6 @@
+<h3>Relance - Facture {{ invoice.number }}</h3>
+<p>{{ message|nl2br }}</p>
+{% if iban %}
+  <p><strong>IBAN :</strong> {{ iban }}</p>
+{% endif %}
+<p>Vous trouverez la facture en pièce jointe.</p>

@@ -14,12 +14,78 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\InvoiceMailer;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 #[Route('/invoices')]
 class InvoiceController extends AbstractController
 {
     public function __construct(private EntityManagerInterface $em)
     {
+    }
+
+    #[Route('/{id}/send', name: 'invoice_send', methods: ['POST'])]
+    public function sendInvoice(Invoice $invoice, Request $request, InvoiceMailer $invoiceMailer): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        if (!$this->isCsrfTokenValid('send_invoice' . $invoice->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        $ok = $invoiceMailer->sendInvoice($invoice);
+        if ($ok) {
+            $this->addFlash('success', 'Email envoyé au client.');
+        } else {
+            $this->addFlash('error', 'Échec de l\'envoi du mail.');
+        }
+
+        if ($request->headers->get('Turbo-Frame') || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+            $parts = [$this->renderView('turbo/toast_stream.html.twig', ['message' => $ok ? 'Email envoyé au client.' : 'Échec de l\'envoi du mail.', 'type' => $ok ? 'success' : 'error'])];
+            return new Response(implode("\n", $parts), 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+        }
+
+        return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+    }
+
+    #[Route('/{id}/reminder', name: 'invoice_reminder', methods: ['GET','POST'])]
+    public function reminder(Invoice $invoice, Request $request, InvoiceMailer $invoiceMailer): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if ($invoice->getUser()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+
+        if ($request->isMethod('GET')) {
+            return $this->render('invoice/_reminder_form.html.twig', ['invoice' => $invoice]);
+        }
+
+        // POST
+        if (!$this->isCsrfTokenValid('reminder' . $invoice->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
+        }
+
+        $message = (string) $request->request->get('message', '');
+        $ok = $invoiceMailer->sendReminder($invoice, $message);
+        if ($ok) {
+            $this->addFlash('success', 'Email de relance envoyé.');
+        } else {
+            $this->addFlash('error', 'Échec de l\'envoi de la relance.');
+        }
+
+        if ($request->headers->get('Turbo-Frame') || str_starts_with($request->headers->get('Accept', ''), 'text/vnd.turbo-stream.html')) {
+            $parts = [$this->renderView('turbo/toast_stream.html.twig', ['message' => $ok ? 'Email de relance envoyé.' : 'Échec de l\'envoi de la relance.', 'type' => $ok ? 'success' : 'error'])];
+            return new Response(implode("\n", $parts), 200, ['Content-Type' => 'text/vnd.turbo-stream.html']);
+        }
+
+        return $this->redirectToRoute('invoice_show', ['id' => $invoice->getId()]);
     }
 
     #[Route('/', name: 'app_invoices', methods: ['GET'])]

@@ -26,8 +26,12 @@ export default class extends Controller {
   confirm(e) {
     e.preventDefault()
     if (this.currentForm) {
-      // submit the form normally
-      this.currentForm.submit()
+      // request submit so Turbo/submit handlers are triggered
+      if (typeof this.currentForm.requestSubmit === 'function') {
+        this.currentForm.requestSubmit()
+      } else {
+        this.currentForm.submit()
+      }
     }
     this._hide()
   }
@@ -47,5 +51,14 @@ export default class extends Controller {
 
   _onKey(e) {
     if (e.key === 'Escape') this._hide()
+  }
+
+  disconnect() {
+    // ensure any global key listener is removed when controller disconnects
+    try {
+      this._hide()
+    } catch (e) {
+      document.removeEventListener('keydown', this._onKey)
+    }
   }
 }
