@@ -1,3 +1,5 @@
+import { Controller } from '@hotwired/stimulus';
+
 const nameCheck = /^[-_a-zA-Z0-9]{4,22}$/;
 const tokenCheck = /^[-_/+a-zA-Z0-9]{24,}$/;
 
@@ -82,4 +84,7 @@ export function removeCsrfToken (formElement) {
 }
 
 /* stimulusFetch: 'lazy' */
-export default 'csrf-protection-controller';
+export default class extends Controller {
+    // This controller only installs global CSRF helpers via side-effects above.
+    // Keeping a minimal Stimulus controller ensures the module registers cleanly.
+}

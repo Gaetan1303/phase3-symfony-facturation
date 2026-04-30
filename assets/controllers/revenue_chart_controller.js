@@ -8,7 +8,23 @@ export default class extends Controller {
     if (!this.canvas) return
     const ctx = this.canvas.getContext && this.canvas.getContext('2d')
     if (!ctx) return
-    if (typeof Chart === 'undefined') return
+    if (typeof Chart === 'undefined') {
+      // Chart.js may be loaded after Stimulus (Chart script tag is added in templates).
+      // Poll briefly and initialize once Chart becomes available.
+      if (!this._waitingForChart) {
+        this._waitingForChart = true;
+        const wait = () => {
+          if (typeof Chart !== 'undefined') {
+            this._waitingForChart = false;
+            try { this.connect() } catch (e) { /* ignore */ }
+          } else {
+            setTimeout(wait, 100);
+          }
+        };
+        setTimeout(wait, 100);
+      }
+      return
+    }
 
     const labels = Array.isArray(this.labelsValue) ? this.labelsValue : []
     const numericData = (Array.isArray(this.dataValue) ? this.dataValue : []).map(v => Number(v) || 0)

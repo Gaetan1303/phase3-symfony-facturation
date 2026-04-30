@@ -11,11 +11,33 @@ class ClientCrudTest extends WebTestCase
 {
     private EntityManagerInterface $em;
     private User $user;
+    private string $dbFile;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->em = self::getContainer()->get(EntityManagerInterface::class);
+        // Use a unique test sqlite DB for this test class to avoid cross-test contamination
+        $this->dbFile = sys_get_temp_dir().'/MimineTest_Client_'.uniqid().'.sqlite';
+        $dbFile = $this->dbFile;
+        $dsn = 'sqlite:///' . $dbFile;
+        putenv('DATABASE_URL='.$dsn);
+        $_ENV['DATABASE_URL'] = $dsn;
+        $_SERVER['DATABASE_URL'] = $dsn;
+        // Ensure previous kernel is shut down, then boot a fresh client/kernel
+        static::ensureKernelShutdown();
+        $client = static::createClient();
+        $this->em = $client->getContainer()->get(EntityManagerInterface::class);
+
+        // Ensure schema exists (bootstrap should have created it, but be defensive)
+        $metaData = $this->em->getMetadataFactory()->getAllMetadata();
+        if (!empty($metaData)) {
+            $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($this->em);
+            try {
+                $schemaTool->createSchema($metaData);
+            } catch (\Doctrine\DBAL\Exception\TableExistsException | \Doctrine\ORM\Tools\ToolsException $e) {
+                // Table(s) already exist in shared test DB; ignore and continue
+            }
+        }
 
         // Create a test user
         $this->user = new User();
@@ -32,11 +54,18 @@ class ClientCrudTest extends WebTestCase
 
     protected function tearDown(): void
     {
-        parent::tearDown();
+        // Clean up the test sqlite file and call parent
+        try {
+            $this->em->getConnection()->executeStatement('DELETE FROM client');
+            $this->em->getConnection()->executeStatement('DELETE FROM users');
+        } catch (\Exception $e) {
+            // ignore
+        }
 
-        // Clean up
-        $this->em->getConnection()->executeStatement('DELETE FROM client');
-        $this->em->getConnection()->executeStatement('DELETE FROM user');
+        parent::tearDown();
+        if (isset($this->dbFile) && file_exists($this->dbFile)) {
+            @unlink($this->dbFile);
+        }
     }
 
     public function testClientListPage(): void
